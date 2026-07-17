@@ -2,7 +2,7 @@ import { useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { Icon, type IconName } from "../components/Icon";
 import { Emblem } from "../components/Emblem";
-import backdrop from "../assets/login-backdrop.jpeg";
+import backdrop from "../assets/login-backdrop.webp";
 import "./Login.css";
 
 /**

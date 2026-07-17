@@ -43,22 +43,39 @@
    this column is taller than it is wide, so cover would crop the Karnataka
    outline out of frame entirely. Bottom-anchoring keeps the whole composition
    and lets the feature card sit over the building's base, as in the comp. */
+/* Overscaled past the column width and bled off the left edge.
+   The asset is a wide 3:2 side-by-side arrangement (building left, map right)
+   while this column is portrait, so at 100% the architecture reads as a distant
+   smudge. Blowing it up to ~134% and letting it run off-canvas puts the
+   building at the foot and the outline up beside the headline, which is the
+   arrangement in the comp. Two separate cutouts would let us place each one
+   properly instead of overscaling a fixed composition. */
 .login__backdrop {
   position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  width: 100%;
+  left: -17%;
+  bottom: -1%;
+  width: 134%;
   height: auto;
   pointer-events: none;
   user-select: none;
 }
 
-/* The asset's baked-in light ground would glare against the dark surface, so
-   dark mode inverts its luminance and drops it back to a recessive wash. */
+/* Omitted in dark mode, deliberately.
+   The artwork is a light-ground composition: pale architecture that fades to
+   white. Keying the white to alpha makes it sit correctly on the light surface,
+   but on the near-black surface there is nothing to salvage — inverting turns
+   the building into a photographic negative, and leaving it keyed rings the
+   silhouette with a hard vignette. Both read worse than no art at all, so dark
+   mode shows the headline and feature strip on a clean surface instead.
+   Revisit if a dark-ground variant of the asset ever exists. */
 :root[data-theme="dark"] .login__backdrop {
-  filter: invert(1) hue-rotate(180deg) saturate(0.5) brightness(0.75);
-  opacity: 0.42;
+  display: none;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) .login__backdrop {
+    display: none;
+  }
 }
 
 .login__brand-head,
