@@ -23,8 +23,6 @@ export type IconName =
   | "hierarchy"
   | "chart-up"
   | "file-check"
-  | "sun"
-  | "moon"
   | "bell"
   | "chevron-down"
   | "chevron-right"
@@ -137,13 +135,6 @@ const PATHS: Record<IconName, ReactElement> = {
       <path d="m9 14.5 2 2 4-4.5" />
     </>
   ),
-  sun: (
-    <>
-      <circle cx="12" cy="12" r="4" />
-      <path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M19.1 4.9l-1.8 1.8M6.7 17.3l-1.8 1.8" />
-    </>
-  ),
-  moon: <path d="M20.5 14.3A8.5 8.5 0 1 1 9.7 3.5a6.8 6.8 0 0 0 10.8 10.8Z" />,
   bell: (
     <>
       <path d="M18 8.5a6 6 0 0 0-12 0c0 6-2.5 7.5-2.5 7.5h17S18 14.5 18 8.5Z" />

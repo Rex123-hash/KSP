@@ -1,6 +1,5 @@
 import { Icon } from "./Icon";
 import { Emblem } from "./Emblem";
-import { useTheme } from "../hooks/useTheme";
 import { currentOfficer } from "../data/mock";
 import "./TopBar.css";
 
@@ -11,7 +10,6 @@ import "./TopBar.css";
  */
 
 export function TopBar() {
-  const { theme, toggle } = useTheme();
   const trail = currentOfficer.breadcrumb;
 
   return (
@@ -44,17 +42,6 @@ export function TopBar() {
       </nav>
 
       <div className="topbar__actions">
-        <button
-          type="button"
-          className="topbar__icon-btn"
-          onClick={toggle}
-          aria-label={
-            theme === "dark" ? "Switch to light theme" : "Switch to dark theme"
-          }
-        >
-          <Icon name={theme === "dark" ? "moon" : "sun"} size={19} />
-        </button>
-
         <button
           type="button"
           className="topbar__icon-btn"

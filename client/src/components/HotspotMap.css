@@ -30,10 +30,6 @@
   color: var(--ink-secondary);
 }
 
-:root[data-theme="dark"] .hotspot-map .leaflet-control-attribution {
-  background: rgba(0, 0, 0, 0.55);
-}
-
 /* --- Floating controls ---------------------------------------------------- */
 
 .hotspot-map__zoom,

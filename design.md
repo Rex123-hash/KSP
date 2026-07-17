@@ -132,7 +132,7 @@ These come from an established viz method. Please don't relitigate them; they're
 - Text wears text tokens, never the series color.
 - Hover layer by default: crosshair + tooltip on line/area, per-mark tooltip on bar/dot/cell.
 - A table view exists for every chart.
-- **Dark mode is selected, not flipped** — its own steps validated against the dark surface.
+- **Light only.** Dark mode was removed deliberately — this is an internal command tool used on desk machines in lit rooms, and a second theme doubles the surface area of every future screen for no operational benefit. Don't design dark variants.
 
 **Palette:** a validated default is available and I'd start there rather than inventing one — but if you bring a KSP-appropriate palette (and an institutional navy/khaki register may well suit this better), it must be **run through the validator**, not eyeballed. The checks are lightness band, chroma floor, adjacent-pair colorblind separation (ΔE ≥ 12), and contrast. Tell me the palette and I'll run it.
 
@@ -164,7 +164,7 @@ Step 4 is the moment. If one screen gets disproportionate design effort, it's th
 ## 10. Deliverables
 
 - Desktop-first (1440px). Officers use desktops. Mobile is not scored.
-- Light **and** dark, both selected deliberately.
+- Light only — see §7.
 - Component states as §8.
 - Tokens as CSS custom properties (roles, not raw hex) — the frontend consumes these directly.
 - Kannada string-width sanity check on nav, labels, and table headers.

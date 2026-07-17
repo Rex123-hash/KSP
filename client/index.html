@@ -10,23 +10,6 @@
     />
     <meta name="theme-color" content="#0b4229" />
     <title>KSP Crime Intelligence Platform</title>
-    <script>
-      // Stamp the theme before first paint so a dark-mode reload doesn't flash white.
-      (function () {
-        try {
-          var stored = localStorage.getItem("ksp-theme");
-          var theme =
-            stored === "light" || stored === "dark"
-              ? stored
-              : window.matchMedia("(prefers-color-scheme: dark)").matches
-                ? "dark"
-                : "light";
-          document.documentElement.setAttribute("data-theme", theme);
-        } catch (e) {
-          /* localStorage unavailable — the CSS media query still covers us */
-        }
-      })();
-    </script>
   </head>
   <body>
     <div id="root"></div>

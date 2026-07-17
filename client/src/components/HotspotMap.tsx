@@ -4,7 +4,6 @@ import "leaflet/dist/leaflet.css";
 import "leaflet.heat";
 import { Icon } from "./Icon";
 import { generateHeatPoints, MAP_CENTER, MAP_ZOOM } from "../data/mock";
-import { useTheme } from "../hooks/useTheme";
 import "./HotspotMap.css";
 
 /**
@@ -21,11 +20,7 @@ import "./HotspotMap.css";
  * users read it natively. It is the ONLY place a multi-hue ramp is allowed.
  */
 
-const TILES = {
-  light:
-    "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
-  dark: "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
-};
+const TILE_URL = "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png";
 
 const ATTRIBUTION =
   '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>';
@@ -41,10 +36,7 @@ const HEAT_GRADIENT = {
 export function HotspotMap({ height = 380 }: { height?: number }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
-  const tileRef = useRef<L.TileLayer | null>(null);
-  const { theme } = useTheme();
 
-  // Create the map once. Theme changes swap the tile layer, not the map.
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
 
@@ -56,7 +48,7 @@ export function HotspotMap({ height = 380 }: { height?: number }) {
       scrollWheelZoom: false, // A demo map that hijacks page scroll is a liability.
     });
 
-    tileRef.current = L.tileLayer(TILES.light, {
+    L.tileLayer(TILE_URL, {
       attribution: ATTRIBUTION,
       maxZoom: 19,
     }).addTo(map);
@@ -74,14 +66,8 @@ export function HotspotMap({ height = 380 }: { height?: number }) {
     return () => {
       map.remove();
       mapRef.current = null;
-      tileRef.current = null;
     };
   }, []);
-
-  useEffect(() => {
-    if (!tileRef.current) return;
-    tileRef.current.setUrl(theme === "dark" ? TILES.dark : TILES.light);
-  }, [theme]);
 
   return (
     <div className="hotspot-map" style={{ height }}>

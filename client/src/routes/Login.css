@@ -60,23 +60,6 @@
   user-select: none;
 }
 
-/* Omitted in dark mode, deliberately.
-   The artwork is a light-ground composition: pale architecture that fades to
-   white. Keying the white to alpha makes it sit correctly on the light surface,
-   but on the near-black surface there is nothing to salvage — inverting turns
-   the building into a photographic negative, and leaving it keyed rings the
-   silhouette with a hard vignette. Both read worse than no art at all, so dark
-   mode shows the headline and feature strip on a clean surface instead.
-   Revisit if a dark-ground variant of the asset ever exists. */
-:root[data-theme="dark"] .login__backdrop {
-  display: none;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root:where(:not([data-theme="light"])) .login__backdrop {
-    display: none;
-  }
-}
 
 .login__brand-head,
 .login__hero,
