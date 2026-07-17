@@ -52,9 +52,9 @@
    properly instead of overscaling a fixed composition. */
 .login__backdrop {
   position: absolute;
-  left: -17%;
-  bottom: -1%;
-  width: 134%;
+  left: -20%;
+  bottom: -4%;
+  width: 155%;
   height: auto;
   pointer-events: none;
   user-select: none;
