@@ -1,13 +1,20 @@
+import emblem from "../assets/ksp-emblem-official.png";
+
 /**
- * PLACEHOLDER CREST.
+ * The official Karnataka State Police emblem — the Ashoka Lion Capital over a
+ * red shield bearing the Gandaberunda (the state's mythical two-headed eagle),
+ * gajakesari (lion-elephant) supporters, and "सत्यमेव जयते" ("Satyameva Jayate")
+ * on the ribbon.
  *
- * This is NOT the Karnataka state emblem (Gandaberunda). It is a neutral
- * stand-in so layout and colour can be built now.
- *
- * Before submission, replace this component's body with the official emblem
- * asset (SVG preferred) — drop it at `src/assets/ksp-emblem.svg` and render it
- * here. Do not ship the placeholder: the emblem is what makes the product read
- * as genuinely KSP's to a police audience, and an invented crest reads as fake.
+ * Sourced directly from ksp.karnataka.gov.in's own site header
+ * (frontend/opt1/images/center_logo/kar_main_logo.png) — this is the exact
+ * asset KSP displays on their own homepage, not a recreation. An earlier
+ * AI-generated version of this crest was rejected before shipping: it used
+ * rampant lions under a European crown (Indian state insignia don't carry a
+ * monarch's crown) and its Kannada banner text didn't match between two
+ * separate generations of "the same" crest — a tell that it was invented
+ * rather than transcribed. Do not regenerate this asset; if it ever needs to
+ * change, re-derive it from an official source the way this one was.
  */
 
 type Props = {
@@ -20,82 +27,38 @@ type Props = {
 export function Emblem({ size = 40, className, medallion = false }: Props) {
   if (medallion) {
     return (
-      <svg
+      <span
         className={className}
-        width={size}
-        height={size}
-        viewBox="0 0 100 100"
-        role="img"
-        aria-label="Karnataka State Police emblem (placeholder)"
+        style={{
+          display: "inline-grid",
+          placeItems: "center",
+          width: size,
+          height: size,
+          borderRadius: "50%",
+          background: "var(--brand-green-800)",
+          border: `${Math.max(1.5, size * 0.025)}px solid var(--brand-gold-500)`,
+          boxSizing: "border-box",
+        }}
       >
-        <circle cx="50" cy="50" r="48" fill="var(--brand-green-800)" />
-        <circle
-          cx="50"
-          cy="50"
-          r="45"
-          fill="none"
-          stroke="var(--brand-gold-500)"
-          strokeWidth="2.5"
+        <img
+          src={emblem}
+          alt="Karnataka State Police"
+          width={size * 0.7}
+          height={size * 0.7}
+          style={{ objectFit: "contain" }}
         />
-        <g transform="translate(50 52) scale(0.62) translate(-50 -50)">
-          <CrestBody />
-        </g>
-      </svg>
+      </span>
     );
   }
 
   return (
-    <svg
+    <img
       className={className}
+      src={emblem}
+      alt="Karnataka State Police"
       width={size}
       height={size}
-      viewBox="0 0 100 100"
-      role="img"
-      aria-label="Karnataka State Police emblem (placeholder)"
-    >
-      <CrestBody />
-    </svg>
-  );
-}
-
-function CrestBody() {
-  return (
-    <g>
-      {/* Shield */}
-      <path
-        d="M50 12 22 22v30c0 17 12 30 28 36 16-6 28-19 28-36V22L50 12Z"
-        fill="var(--brand-gold-500)"
-        stroke="var(--brand-gold-600)"
-        strokeWidth="1.5"
-      />
-      {/* Supporters, abstracted */}
-      <path
-        d="M22 30c-6 2-10 7-10 13s4 11 10 13"
-        fill="none"
-        stroke="var(--brand-gold-600)"
-        strokeWidth="3"
-        strokeLinecap="round"
-      />
-      <path
-        d="M78 30c6 2 10 7 10 13s-4 11-10 13"
-        fill="none"
-        stroke="var(--brand-gold-600)"
-        strokeWidth="3"
-        strokeLinecap="round"
-      />
-      {/* Inner field */}
-      <path
-        d="M50 22 32 28v22c0 12 8 21 18 25 10-4 18-13 18-25V28L50 22Z"
-        fill="var(--brand-green-800)"
-      />
-      {/* Ashoka-style pillar abstraction */}
-      <path
-        d="M50 32v28M42 40h16M44 60h12"
-        stroke="var(--brand-gold-400)"
-        strokeWidth="2.5"
-        strokeLinecap="round"
-      />
-      <circle cx="50" cy="35" r="3.5" fill="var(--brand-gold-400)" />
-    </g>
+      style={{ objectFit: "contain" }}
+    />
   );
 }
