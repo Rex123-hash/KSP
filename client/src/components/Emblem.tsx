@@ -1,20 +1,13 @@
-import emblem from "../assets/ksp-emblem-official.png";
-
 /**
- * The official Karnataka State Police emblem — the Ashoka Lion Capital over a
- * red shield bearing the Gandaberunda (the state's mythical two-headed eagle),
- * gajakesari (lion-elephant) supporters, and "सत्यमेव जयते" ("Satyameva Jayate")
- * on the ribbon.
+ * Generic badge mark — not the state emblem.
  *
- * Sourced directly from ksp.karnataka.gov.in's own site header
- * (frontend/opt1/images/center_logo/kar_main_logo.png) — this is the exact
- * asset KSP displays on their own homepage, not a recreation. An earlier
- * AI-generated version of this crest was rejected before shipping: it used
- * rampant lions under a European crown (Indian state insignia don't carry a
- * monarch's crown) and its Kannada banner text didn't match between two
- * separate generations of "the same" crest — a tell that it was invented
- * rather than transcribed. Do not regenerate this asset; if it ever needs to
- * change, re-derive it from an official source the way this one was.
+ * The real Karnataka State Police emblem is legally restricted: a 2022 GoK
+ * circular (citing the State Emblem of India (Prohibition of Improper Use)
+ * Act, 2005) reserves it for government departments absent prior permission.
+ * This is a stylised, non-literal shield-and-star mark instead — no
+ * Gandaberunda, no Ashoka Lion Capital, nothing that reproduces protected
+ * state iconography. Swap for the real emblem only once KSP/hack2skill
+ * confirm its use in the submission is authorised.
  */
 
 type Props = {
@@ -27,38 +20,62 @@ type Props = {
 export function Emblem({ size = 40, className, medallion = false }: Props) {
   if (medallion) {
     return (
-      <span
+      <svg
         className={className}
-        style={{
-          display: "inline-grid",
-          placeItems: "center",
-          width: size,
-          height: size,
-          borderRadius: "50%",
-          background: "var(--brand-green-800)",
-          border: `${Math.max(1.5, size * 0.025)}px solid var(--brand-gold-500)`,
-          boxSizing: "border-box",
-        }}
+        width={size}
+        height={size}
+        viewBox="0 0 100 100"
+        role="img"
+        aria-label="Karnataka State Police"
       >
-        <img
-          src={emblem}
-          alt="Karnataka State Police"
-          width={size * 0.7}
-          height={size * 0.7}
-          style={{ objectFit: "contain" }}
+        <circle cx="50" cy="50" r="48" fill="var(--brand-green-800)" />
+        <circle
+          cx="50"
+          cy="50"
+          r="45"
+          fill="none"
+          stroke="var(--brand-gold-500)"
+          strokeWidth="2.5"
         />
-      </span>
+        <g transform="translate(50 53) scale(0.6) translate(-50 -50)">
+          <BadgeBody />
+        </g>
+      </svg>
     );
   }
 
   return (
-    <img
+    <svg
       className={className}
-      src={emblem}
-      alt="Karnataka State Police"
       width={size}
       height={size}
-      style={{ objectFit: "contain" }}
-    />
+      viewBox="0 0 100 100"
+      role="img"
+      aria-label="Karnataka State Police"
+    >
+      <BadgeBody />
+    </svg>
+  );
+}
+
+function BadgeBody() {
+  return (
+    <g>
+      <path
+        d="M50 6 84 18v28c0 24-14 41-34 48C30 87 16 70 16 46V18L50 6Z"
+        fill="var(--brand-green-800)"
+        stroke="var(--brand-gold-500)"
+        strokeWidth="2"
+      />
+      <path
+        d="M50 16 76 25v21c0 18-10.5 31-26 36-15.5-5-26-18-26-36V25L50 16Z"
+        fill="var(--brand-green-050)"
+        opacity="0.08"
+      />
+      <path
+        d="M50 30 58.8 45.6 76 48.6 63.8 61.2 66.6 78.6 50 70.4 33.4 78.6 36.2 61.2 24 48.6 41.2 45.6 50 30Z"
+        fill="var(--brand-gold-500)"
+      />
+    </g>
   );
 }
