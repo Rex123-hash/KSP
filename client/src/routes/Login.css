@@ -36,31 +36,29 @@
   }
 }
 
-/* Vidhana Soudha photograph goes here — see BackdropArt() in Login.tsx.
-   Positioned and masked already; only `background-image` is missing. */
-.login__brand::after {
-  content: "";
+/* The supplied asset already carries the Vidhana Soudha, the Karnataka outline
+   and the node network, pre-faded against an off-white ground that matches
+   --surface-page. It needs no additional treatment in light mode. */
+/* Anchored to the foot at full width rather than `cover`: the asset is 3:2 and
+   this column is taller than it is wide, so cover would crop the Karnataka
+   outline out of frame entirely. Bottom-anchoring keeps the whole composition
+   and lets the feature card sit over the building's base, as in the comp. */
+.login__backdrop {
   position: absolute;
   left: 0;
   right: 0;
   bottom: 0;
-  height: 62%;
-  background-size: cover;
-  background-position: center bottom;
-  opacity: 0.16;
-  filter: grayscale(1) sepia(0.35) hue-rotate(80deg);
-  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 45%);
-  mask-image: linear-gradient(to bottom, transparent, #000 45%);
+  width: 100%;
+  height: auto;
   pointer-events: none;
+  user-select: none;
 }
 
-.login__backdrop {
-  position: absolute;
-  top: 4%;
-  right: 4%;
-  width: 46%;
-  max-width: 380px;
-  pointer-events: none;
+/* The asset's baked-in light ground would glare against the dark surface, so
+   dark mode inverts its luminance and drops it back to a recessive wash. */
+:root[data-theme="dark"] .login__backdrop {
+  filter: invert(1) hue-rotate(180deg) saturate(0.5) brightness(0.75);
+  opacity: 0.42;
 }
 
 .login__brand-head,

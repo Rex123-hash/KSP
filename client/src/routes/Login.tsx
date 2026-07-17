@@ -2,6 +2,7 @@ import { useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { Icon, type IconName } from "../components/Icon";
 import { Emblem } from "../components/Emblem";
+import backdrop from "../assets/login-backdrop.jpeg";
 import "./Login.css";
 
 /**
@@ -50,7 +51,7 @@ export function Login() {
       <div className="login__main">
         {/* --- Left: brand --------------------------------------------- */}
         <section className="login__brand">
-          <BackdropArt />
+          <img className="login__backdrop" src={backdrop} alt="" aria-hidden="true" />
 
           <header className="login__brand-head">
             <Emblem size={46} />
@@ -206,53 +207,3 @@ export function Login() {
   );
 }
 
-/**
- * PLACEHOLDER BACKDROP.
- *
- * The comp has (a) a photograph of the Vidhana Soudha and (b) an outline of
- * Karnataka with a node network over it. Neither is reproduced here:
- *
- *  - The building needs a real licensed photograph. Drop it at
- *    `src/assets/vidhana-soudha.webp` and set it as the background of
- *    `.login__brand::after`, which is already positioned for it.
- *  - The state outline needs an accurate Karnataka boundary (GeoJSON → SVG
- *    path). We need that asset for the map work anyway (architecture.md §7).
- *    An approximated state boundary drawn by hand is not acceptable in a
- *    government product, so this renders an abstract node motif instead —
- *    deliberately not claiming to be a map.
- */
-function BackdropArt() {
-  return (
-    <svg
-      className="login__backdrop"
-      viewBox="0 0 400 400"
-      aria-hidden="true"
-      focusable="false"
-    >
-      <g
-        stroke="var(--brand-green-500)"
-        strokeWidth="1"
-        fill="none"
-        opacity="0.5"
-      >
-        <path d="M200 60 L120 150 M200 60 L290 140 M120 150 L100 260 M290 140 L300 250 M120 150 L200 200 M290 140 L200 200 M200 200 L100 260 M200 200 L300 250 M100 260 L190 330 M300 250 L190 330 M200 200 L190 330" />
-      </g>
-      <g fill="var(--brand-green-500)" opacity="0.55">
-        <circle cx="200" cy="60" r="4" />
-        <circle cx="120" cy="150" r="3.5" />
-        <circle cx="290" cy="140" r="3.5" />
-        <circle cx="100" cy="260" r="3" />
-        <circle cx="300" cy="250" r="3" />
-        <circle cx="190" cy="330" r="3" />
-      </g>
-      <circle
-        cx="200"
-        cy="200"
-        r="17"
-        fill="var(--brand-green-100)"
-        stroke="var(--brand-green-500)"
-        strokeWidth="1.2"
-      />
-    </svg>
-  );
-}
