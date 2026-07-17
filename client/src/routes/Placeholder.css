@@ -1,0 +1,48 @@
+.placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-height: 62vh;
+  padding: 40px 24px;
+  text-align: center;
+}
+
+.placeholder__icon {
+  display: grid;
+  place-items: center;
+  width: 62px;
+  height: 62px;
+  margin-bottom: 16px;
+  color: var(--brand-green-600);
+  background: var(--brand-green-050);
+  border-radius: var(--radius-lg);
+}
+
+.placeholder__title {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  color: var(--ink-primary);
+}
+
+.placeholder__body {
+  max-width: 44ch;
+  margin-top: 6px;
+  font-size: var(--text-body);
+  line-height: 1.55;
+  color: var(--ink-secondary);
+}
+
+.placeholder__tag {
+  margin-top: 18px;
+  padding: 5px 11px;
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--status-warning);
+  background: var(--status-warning-bg);
+  border-radius: var(--radius-pill);
+}

@@ -1,0 +1,204 @@
+/* ==========================================================================
+   Design tokens — KSP Crime Intelligence Platform
+   Roles, not raw hex. Consume these; never hardcode a colour in a component.
+   Dark mode is a selected set of steps, not an inversion of light.
+   ========================================================================== */
+
+:root {
+  color-scheme: light;
+
+  /* --- Brand -------------------------------------------------------------- */
+  --brand-green-900: #08341f;
+  --brand-green-800: #0b4229;
+  --brand-green-700: #0f4c33;
+  --brand-green-600: #14543a;
+  --brand-green-500: #1c6b49;
+  --brand-green-100: #e6efe9;
+  --brand-green-050: #f1f6f2;
+
+  --brand-gold-600: #a8871f;
+  --brand-gold-500: #c9a227;
+  --brand-gold-400: #d9b950;
+  --brand-gold-100: #f6eed6;
+
+  /* --- Surfaces ----------------------------------------------------------- */
+  --surface-page: #f4f6f1;
+  --surface-card: #ffffff;
+  --surface-sunken: #eef2ec;
+  --surface-raised: #ffffff;
+  --surface-inverse: #0b4229;
+
+  /* --- Ink ---------------------------------------------------------------- */
+  --ink-primary: #16181a;
+  --ink-secondary: #55584f;
+  --ink-muted: #8a8d84;
+  --ink-on-inverse: #ffffff;
+  --ink-on-inverse-muted: rgba(255, 255, 255, 0.72);
+
+  /* --- Lines -------------------------------------------------------------- */
+  --line-hairline: rgba(22, 24, 26, 0.09);
+  --line-strong: rgba(22, 24, 26, 0.16);
+  --line-grid: #e4e8df;
+
+  /* --- Status (reserved — never reused as a series colour) ---------------- */
+  --status-good: #1a7f37;
+  --status-good-bg: #e7f3ea;
+  --status-warning: #b4791a;
+  --status-warning-bg: #fbf1de;
+  --status-serious: #c2601f;
+  --status-serious-bg: #fcece1;
+  --status-critical: #c0392f;
+  --status-critical-bg: #fceceb;
+  --status-neutral: #55584f;
+  --status-neutral-bg: #eef0ea;
+
+  /* --- Delta direction (semantic, not literal up/down) -------------------- */
+  --delta-good: #1a7f37;
+  --delta-bad: #c0392f;
+
+  /* --- Sequential ramp (case density — one hue, light -> dark) ------------ */
+  --seq-100: #dce9e1;
+  --seq-200: #b6d3c2;
+  --seq-300: #8dbaa1;
+  --seq-400: #5f9d7d;
+  --seq-500: #3a8060;
+  --seq-600: #1c6b49;
+  --seq-700: #0f4c33;
+
+  /* --- Heat ramp (map density overlay — see note in design.md) ------------ */
+  --heat-1: #5f9d7d;
+  --heat-2: #b8d14e;
+  --heat-3: #f2c53d;
+  --heat-4: #ee8b3a;
+  --heat-5: #d94436;
+
+  /* --- Elevation ---------------------------------------------------------- */
+  --shadow-sm: 0 1px 2px rgba(16, 24, 20, 0.04);
+  --shadow-md: 0 2px 8px rgba(16, 24, 20, 0.06);
+  --shadow-lg: 0 8px 32px rgba(16, 24, 20, 0.10);
+
+  /* --- Geometry ----------------------------------------------------------- */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-pill: 999px;
+
+  /* --- Type --------------------------------------------------------------- */
+  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans Kannada",
+    sans-serif;
+
+  --text-hero: 48px;
+  --text-display: 34px;
+  --text-value: 30px;
+  --text-title: 20px;
+  --text-body: 14px;
+  --text-small: 13px;
+  --text-label: 11px;
+
+  /* --- Layout ------------------------------------------------------------- */
+  --sidebar-w: 248px;
+  --topbar-h: 64px;
+  --gutter: 24px;
+}
+
+/* --- Dark mode -----------------------------------------------------------
+   Steps chosen against the dark surface, validated as their own set.
+   Both scopes declared: the media query follows the OS, the [data-theme]
+   attribute follows the in-app toggle and must win in both directions.
+   ------------------------------------------------------------------------ */
+
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) {
+    color-scheme: dark;
+
+    --brand-green-100: #123a29;
+    --brand-green-050: #0e2f21;
+
+    --surface-page: #0d100e;
+    --surface-card: #171b18;
+    --surface-sunken: #12160f;
+    --surface-raised: #1e2320;
+    --surface-inverse: #0b4229;
+
+    --ink-primary: #ffffff;
+    --ink-secondary: #c3c7bb;
+    --ink-muted: #8a8d84;
+
+    --line-hairline: rgba(255, 255, 255, 0.10);
+    --line-strong: rgba(255, 255, 255, 0.18);
+    --line-grid: #2a2f2b;
+
+    --status-good: #34a853;
+    --status-good-bg: #14301d;
+    --status-warning: #d9a441;
+    --status-warning-bg: #33270f;
+    --status-serious: #e0824a;
+    --status-serious-bg: #331e12;
+    --status-critical: #e05c52;
+    --status-critical-bg: #331715;
+    --status-neutral: #c3c7bb;
+    --status-neutral-bg: #24282300;
+
+    --delta-good: #34a853;
+    --delta-bad: #e05c52;
+
+    --seq-100: #16352a;
+    --seq-200: #1c4a37;
+    --seq-300: #246045;
+    --seq-400: #2f7754;
+    --seq-500: #3d8f65;
+    --seq-600: #4da878;
+    --seq-700: #6cc294;
+
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.45);
+    --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.55);
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --brand-green-100: #123a29;
+  --brand-green-050: #0e2f21;
+
+  --surface-page: #0d100e;
+  --surface-card: #171b18;
+  --surface-sunken: #12160f;
+  --surface-raised: #1e2320;
+  --surface-inverse: #0b4229;
+
+  --ink-primary: #ffffff;
+  --ink-secondary: #c3c7bb;
+  --ink-muted: #8a8d84;
+
+  --line-hairline: rgba(255, 255, 255, 0.10);
+  --line-strong: rgba(255, 255, 255, 0.18);
+  --line-grid: #2a2f2b;
+
+  --status-good: #34a853;
+  --status-good-bg: #14301d;
+  --status-warning: #d9a441;
+  --status-warning-bg: #33270f;
+  --status-serious: #e0824a;
+  --status-serious-bg: #331e12;
+  --status-critical: #e05c52;
+  --status-critical-bg: #331715;
+  --status-neutral: #c3c7bb;
+  --status-neutral-bg: #242823;
+
+  --delta-good: #34a853;
+  --delta-bad: #e05c52;
+
+  --seq-100: #16352a;
+  --seq-200: #1c4a37;
+  --seq-300: #246045;
+  --seq-400: #2f7754;
+  --seq-500: #3d8f65;
+  --seq-600: #4da878;
+  --seq-700: #6cc294;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.55);
+}

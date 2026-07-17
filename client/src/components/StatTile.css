@@ -1,0 +1,83 @@
+.stat-tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 16px 16px 0;
+  background: var(--surface-card);
+  border: 1px solid var(--line-hairline);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.stat-tile__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.stat-tile__label {
+  font-size: var(--text-label);
+  line-height: 1.35;
+}
+
+.stat-tile__icon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+}
+
+.stat-tile__icon.is-good {
+  color: var(--status-good);
+  background: var(--status-good-bg);
+}
+
+.stat-tile__icon.is-bad {
+  color: var(--status-critical);
+  background: var(--status-critical-bg);
+}
+
+.stat-tile__value {
+  margin-top: 10px;
+  font-size: var(--text-value);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  color: var(--ink-primary);
+}
+
+.stat-tile__delta {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 8px;
+  font-size: var(--text-small);
+}
+
+.stat-tile__delta.is-good {
+  color: var(--delta-good);
+}
+
+.stat-tile__delta.is-bad {
+  color: var(--delta-bad);
+}
+
+.stat-tile__delta-value {
+  font-weight: 650;
+}
+
+/* The label is text, so it wears a text token — never the delta colour. */
+.stat-tile__delta-label {
+  color: var(--ink-muted);
+  font-weight: 400;
+}
+
+.stat-tile__spark {
+  margin: 14px -1px -1px;
+  line-height: 0;
+}

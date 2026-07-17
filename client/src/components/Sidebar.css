@@ -1,0 +1,135 @@
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  width: var(--sidebar-w);
+  flex-shrink: 0;
+  height: 100vh;
+  position: sticky;
+  top: 0;
+  padding: 20px 14px 16px;
+  background: var(--surface-card);
+  border-right: 1px solid var(--line-hairline);
+}
+
+/* --- Brand ---------------------------------------------------------------- */
+
+.sidebar__brand {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 0 6px 22px;
+}
+
+.sidebar__brand-text {
+  min-width: 0;
+}
+
+.sidebar__brand-name {
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.25;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  color: var(--brand-green-700);
+}
+
+.sidebar__brand-sub {
+  margin-top: 3px;
+  font-size: 10.5px;
+  color: var(--ink-muted);
+}
+
+/* --- Nav ------------------------------------------------------------------ */
+
+.sidebar__nav {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.sidebar__link {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 11px 12px;
+  font-size: var(--text-body);
+  font-weight: 500;
+  color: var(--ink-secondary);
+  border-radius: var(--radius-md);
+  transition: background-color 120ms ease, color 120ms ease;
+}
+
+.sidebar__link:hover {
+  background: var(--brand-green-050);
+  color: var(--brand-green-700);
+}
+
+.sidebar__link.is-active {
+  background: var(--brand-green-800);
+  color: var(--ink-on-inverse);
+  font-weight: 600;
+  box-shadow: var(--shadow-sm);
+}
+
+.sidebar__link.is-active:hover {
+  background: var(--brand-green-800);
+  color: var(--ink-on-inverse);
+}
+
+/* --- Scope card ----------------------------------------------------------- */
+
+.sidebar__scope {
+  margin-top: auto;
+  padding: 14px;
+  background: var(--brand-green-050);
+  border: 1px solid var(--line-hairline);
+  border-radius: var(--radius-md);
+}
+
+.sidebar__scope-head {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.sidebar__scope-icon {
+  display: grid;
+  place-items: center;
+  color: var(--brand-green-600);
+}
+
+.sidebar__scope-eyebrow {
+  font-size: 9.5px;
+  color: var(--ink-muted);
+}
+
+.sidebar__scope-unit {
+  margin-top: 9px;
+  font-size: var(--text-small);
+  font-weight: 650;
+  line-height: 1.35;
+  color: var(--ink-primary);
+}
+
+.sidebar__scope-rank {
+  margin-top: 1px;
+  font-size: 12px;
+  color: var(--ink-secondary);
+}
+
+.sidebar__scope-change {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  margin-top: 10px;
+  padding: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--brand-green-600);
+}
+
+.sidebar__scope-change:hover {
+  color: var(--brand-green-800);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}

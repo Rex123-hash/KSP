@@ -1,0 +1,364 @@
+/* --- Page head ------------------------------------------------------------ */
+
+.cmd__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 22px;
+}
+
+.cmd__title {
+  font-size: var(--text-display);
+  font-weight: 750;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  color: var(--brand-green-700);
+}
+
+.cmd__subtitle {
+  margin-top: 5px;
+  font-size: var(--text-body);
+  color: var(--ink-secondary);
+}
+
+.cmd__controls {
+  display: flex;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.cmd__control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  font-size: var(--text-body);
+  font-weight: 500;
+  color: var(--ink-primary);
+  background: var(--surface-card);
+  border: 1px solid var(--line-hairline);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+}
+
+.cmd__control:hover {
+  border-color: var(--line-strong);
+}
+
+.cmd__control svg:first-child {
+  color: var(--ink-muted);
+}
+
+/* --- KPI row -------------------------------------------------------------- */
+
+.cmd__kpis {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+/* Hold five across at the 1440 design target; only break below that. */
+@media (max-width: 1280px) {
+  .cmd__kpis {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .cmd__kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* --- Two-column body ------------------------------------------------------ */
+
+.cmd__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+@media (max-width: 1200px) {
+  .cmd__grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.cmd__col {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+/* --- Quick summary -------------------------------------------------------- */
+
+.summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media (max-width: 700px) {
+  .summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.summary__item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  min-width: 0;
+}
+
+.summary__icon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  color: var(--brand-green-600);
+  background: var(--brand-green-050);
+  border-radius: 9px;
+}
+
+.summary__text {
+  min-width: 0;
+}
+
+.summary__label {
+  font-size: 11px;
+  color: var(--ink-muted);
+}
+
+.summary__value {
+  margin-top: 3px;
+  font-size: var(--text-body);
+  font-weight: 650;
+  line-height: 1.3;
+  color: var(--ink-primary);
+}
+
+.summary__sub {
+  margin-top: 2px;
+  font-size: 11.5px;
+  color: var(--ink-muted);
+}
+
+.summary__sub.is-good {
+  color: var(--delta-good);
+  font-weight: 550;
+}
+
+.summary__sub.is-bad {
+  color: var(--delta-bad);
+  font-weight: 550;
+}
+
+/* --- Alerts --------------------------------------------------------------- */
+
+.alerts {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.alerts__row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  cursor: pointer;
+  transition: background-color 120ms ease;
+}
+
+.alerts__row + .alerts__row {
+  border-top: 1px solid var(--line-hairline);
+}
+
+.alerts__row:hover {
+  background: var(--brand-green-050);
+}
+
+.alerts__icon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-pill);
+}
+
+.alerts__row.is-critical .alerts__icon {
+  color: var(--status-critical);
+  background: var(--status-critical-bg);
+}
+
+.alerts__row.is-serious .alerts__icon {
+  color: var(--status-serious);
+  background: var(--status-serious-bg);
+}
+
+.alerts__row.is-warning .alerts__icon {
+  color: var(--status-warning);
+  background: var(--status-warning-bg);
+}
+
+.alerts__row.is-good .alerts__icon {
+  color: var(--status-good);
+  background: var(--status-good-bg);
+}
+
+.alerts__text {
+  flex: 1;
+  min-width: 0;
+}
+
+.alerts__title-line {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.alerts__title {
+  font-size: var(--text-body);
+  font-weight: 650;
+  color: var(--ink-primary);
+}
+
+.alerts__delta {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.alerts__row.is-critical .alerts__delta {
+  color: var(--status-critical);
+}
+
+.alerts__row.is-serious .alerts__delta {
+  color: var(--status-serious);
+}
+
+.alerts__row.is-warning .alerts__delta {
+  color: var(--status-warning);
+}
+
+.alerts__row.is-good .alerts__delta {
+  color: var(--status-good);
+}
+
+.alerts__delta-label {
+  margin-left: 3px;
+  font-weight: 400;
+  color: var(--ink-muted);
+}
+
+.alerts__meta {
+  margin-top: 3px;
+  font-size: 12px;
+  color: var(--ink-muted);
+}
+
+.alerts__chevron {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  color: var(--ink-muted);
+}
+
+/* --- FIR table ------------------------------------------------------------ */
+
+.fir-table__scroll {
+  overflow-x: auto;
+}
+
+.fir-table {
+  min-width: 560px;
+  font-size: var(--text-small);
+}
+
+.fir-table th {
+  padding: 11px 16px;
+  font-size: 11px;
+  font-weight: 650;
+  text-align: left;
+  white-space: nowrap;
+  color: var(--ink-muted);
+  background: var(--surface-sunken);
+  border-bottom: 1px solid var(--line-hairline);
+}
+
+.fir-table td {
+  padding: 13px 16px;
+  color: var(--ink-secondary);
+  border-bottom: 1px solid var(--line-hairline);
+  white-space: nowrap;
+}
+
+.fir-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.fir-table tbody tr:hover td {
+  background: var(--brand-green-050);
+}
+
+.fir-table__no {
+  font-weight: 650;
+  color: var(--ink-primary);
+}
+
+.fir-table__when {
+  color: var(--ink-muted);
+}
+
+/* --- Status pills --------------------------------------------------------- */
+
+.pill {
+  display: inline-block;
+  padding: 4px 9px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  border-radius: var(--radius-sm);
+}
+
+.pill.is-under-investigation {
+  color: var(--status-warning);
+  background: var(--status-warning-bg);
+}
+
+.pill.is-chargesheet-filed {
+  color: var(--status-good);
+  background: var(--status-good-bg);
+}
+
+.pill.is-fir-registered {
+  color: var(--status-neutral);
+  background: var(--status-neutral-bg);
+}
+
+/* --- Footer --------------------------------------------------------------- */
+
+.cmd__footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 28px;
+  padding-top: 20px;
+  font-size: 12px;
+  color: var(--ink-muted);
+  border-top: 1px solid var(--line-hairline);
+}
