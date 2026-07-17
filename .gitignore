@@ -1,0 +1,54 @@
+# --- Generated data (never commit; regenerate from the generator) ---
+/data/generated/
+/data/*.csv
+/data/*.parquet
+*.sqlite
+*.db
+
+# Ground truth for entity-resolution evaluation — regenerable, and large
+/data/ground_truth/
+
+# Downloaded calibration sources (KSP crime review PDFs, OpenCity CSVs)
+/data/sources/
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+.ipynb_checkpoints/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+
+# --- Node / React ---
+node_modules/
+dist/
+build/
+.vite/
+*.log
+npm-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# --- Secrets / config ---
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+credentials.json
+
+# --- Zoho Catalyst ---
+.catalystrc
+catalyst-cli.log
+.catalyst/
+functions/**/node_modules/
+
+# --- Editors / OS ---
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
