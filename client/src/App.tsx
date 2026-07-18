@@ -5,7 +5,10 @@ import { MapHotspots } from "./routes/MapHotspots";
 import { PersonNetwork } from "./routes/PersonNetwork";
 import { TrendsAlerts } from "./routes/TrendsAlerts";
 import { CaseDetails } from "./routes/CaseDetails";
+import { Reports } from "./routes/Reports";
+import { Settings } from "./routes/Settings";
 import { Login } from "./routes/Login";
+import { Placeholder } from "./routes/Placeholder";
 
 export default function App() {
   return (
@@ -23,6 +26,21 @@ export default function App() {
           <Route path="/trends" element={<TrendsAlerts />} />
 
           <Route path="/cases" element={<CaseDetails />} />
+
+          <Route path="/reports" element={<Reports />} />
+
+          <Route
+            path="/downloads"
+            element={
+              <Placeholder
+                title="Downloads"
+                icon="arrow-down"
+                body="Exported reports, case bundles, and generated PDFs collect here for retrieval. Wired once the export pipeline lands."
+              />
+            }
+          />
+
+          <Route path="/settings" element={<Settings />} />
         </Route>
       </Routes>
     </BrowserRouter>

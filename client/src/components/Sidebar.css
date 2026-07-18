@@ -45,6 +45,13 @@
   display: flex;
   flex-direction: column;
   gap: 3px;
+  overflow-y: auto;
+}
+
+.sidebar__divider {
+  height: 1px;
+  margin: 10px 12px;
+  background: var(--line-hairline);
 }
 
 .sidebar__link {

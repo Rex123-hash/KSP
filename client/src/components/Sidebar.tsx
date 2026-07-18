@@ -5,9 +5,9 @@ import { currentOfficer } from "../data/mock";
 import "./Sidebar.css";
 
 /**
- * The six surfaces from design.md §3. No more.
  * The scope card at the foot is the org-chart spine made visible: it answers
- * "where do I sit in the force" on every screen.
+ * "where do I sit in the force" on every screen. Nav is split into the core
+ * analytical surfaces and a secondary group (reporting / account), divided.
  */
 
 const NAV: { to: string; label: string; icon: IconName }[] = [
@@ -16,6 +16,12 @@ const NAV: { to: string; label: string; icon: IconName }[] = [
   { to: "/network", label: "Person & Network", icon: "network" },
   { to: "/trends", label: "Trends & Alerts", icon: "alert" },
   { to: "/cases", label: "Case / FIR Details", icon: "file-text" },
+];
+
+const NAV_SECONDARY: { to: string; label: string; icon: IconName }[] = [
+  { to: "/reports", label: "Reports", icon: "chart-up" },
+  { to: "/downloads", label: "Downloads", icon: "arrow-down" },
+  { to: "/settings", label: "Settings", icon: "settings" },
 ];
 
 export function Sidebar() {
@@ -39,6 +45,21 @@ export function Sidebar() {
             key={item.to}
             to={item.to}
             end={item.to === "/"}
+            className={({ isActive }) =>
+              `sidebar__link${isActive ? " is-active" : ""}`
+            }
+          >
+            <Icon name={item.icon} size={19} />
+            <span>{item.label}</span>
+          </NavLink>
+        ))}
+
+        <span className="sidebar__divider" role="presentation" />
+
+        {NAV_SECONDARY.map((item) => (
+          <NavLink
+            key={item.to}
+            to={item.to}
             className={({ isActive }) =>
               `sidebar__link${isActive ? " is-active" : ""}`
             }

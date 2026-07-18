@@ -1,0 +1,225 @@
+.rp-kpis {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+@media (max-width: 1280px) {
+  .rp-kpis {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@media (max-width: 800px) {
+  .rp-kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.rp-mid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr);
+  gap: 16px;
+  margin-bottom: 16px;
+  align-items: start;
+}
+
+@media (max-width: 1100px) {
+  .rp-mid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.rp-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  margin-bottom: 8px;
+}
+.rp-legend__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  color: var(--ink-secondary);
+}
+.rp-legend__dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+}
+
+.rp-dist {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+@media (max-width: 1360px) and (min-width: 1101px) {
+  .rp-dist {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+/* --- Bottom row ----------------------------------------------------------- */
+
+.rp-bottom {
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+@media (max-width: 1100px) {
+  .rp-bottom {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Report summary table */
+.rp-reports__scroll {
+  overflow-x: auto;
+}
+.rp-reports {
+  min-width: 620px;
+  font-size: var(--text-small);
+}
+.rp-reports th {
+  padding: 11px 16px;
+  font-size: 11px;
+  font-weight: 650;
+  text-align: left;
+  color: var(--ink-muted);
+  background: var(--surface-sunken);
+  border-bottom: 1px solid var(--line-hairline);
+}
+.rp-reports__act-h {
+  text-align: right;
+}
+.rp-reports td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--line-hairline);
+  vertical-align: middle;
+}
+.rp-reports tbody tr:last-child td {
+  border-bottom: none;
+}
+.rp-reports tbody tr:hover td {
+  background: var(--brand-green-050);
+}
+.rp-reports__type {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-weight: 650;
+  color: var(--ink-primary);
+}
+.rp-reports__icon {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  color: var(--brand-green-600);
+  background: var(--brand-green-050);
+  border-radius: 8px;
+}
+.rp-reports__desc {
+  color: var(--ink-secondary);
+}
+.rp-reports__muted {
+  color: var(--ink-muted);
+  white-space: nowrap;
+}
+.rp-reports__dl {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  margin-left: auto;
+  color: var(--brand-green-600);
+  background: var(--surface-card);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+}
+.rp-reports__dl:hover {
+  background: var(--brand-green-050);
+  border-color: var(--brand-green-500);
+}
+
+/* Top zones */
+.rp-zones__head {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line-hairline);
+  font-size: 11px;
+  font-weight: 650;
+  color: var(--ink-muted);
+}
+.rp-zones__head span:first-child {
+  grid-column: 1;
+}
+.rp-zones__pct-h {
+  text-align: right;
+}
+.rp-zones {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.rp-zones__row {
+  display: grid;
+  grid-template-columns: 1fr auto auto auto;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--line-hairline);
+}
+.rp-zones__name {
+  font-size: var(--text-small);
+  font-weight: 600;
+  color: var(--ink-primary);
+}
+.rp-zones__cases {
+  font-size: var(--text-small);
+  color: var(--ink-secondary);
+  min-width: 44px;
+  text-align: right;
+}
+.rp-zones__bar {
+  width: 80px;
+  height: 6px;
+  border-radius: var(--radius-pill);
+  background: var(--surface-sunken);
+  overflow: hidden;
+}
+.rp-zones__fill {
+  display: block;
+  height: 100%;
+  background: var(--brand-green-600);
+  border-radius: var(--radius-pill);
+}
+.rp-zones__pct {
+  font-size: 12px;
+  font-weight: 650;
+  color: var(--ink-secondary);
+  min-width: 42px;
+  text-align: right;
+}
+.rp-zones__all {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  margin-top: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--brand-green-600);
+}
+.rp-zones__all:hover {
+  color: var(--brand-green-800);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}

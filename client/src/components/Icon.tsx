@@ -34,7 +34,12 @@ export type IconName =
   | "layers"
   | "clock"
   | "tag"
-  | "check";
+  | "check"
+  | "settings"
+  | "globe"
+  | "share"
+  | "sun"
+  | "moon";
 
 const PATHS: Record<IconName, ReactElement> = {
   command: (
@@ -178,6 +183,33 @@ const PATHS: Record<IconName, ReactElement> = {
     </>
   ),
   check: <path d="m4.5 12.5 5 5 10-11" />,
+  settings: (
+    <>
+      <circle cx="12" cy="12" r="3.2" />
+      <path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.1 5.1l2.1 2.1M16.8 16.8l2.1 2.1M18.9 5.1l-2.1 2.1M7.2 16.8l-2.1 2.1" />
+    </>
+  ),
+  globe: (
+    <>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M3 12h18M12 3c2.5 2.5 3.8 5.7 3.8 9s-1.3 6.5-3.8 9c-2.5-2.5-3.8-5.7-3.8-9S9.5 5.5 12 3Z" />
+    </>
+  ),
+  share: (
+    <>
+      <circle cx="6" cy="12" r="2.6" />
+      <circle cx="17.5" cy="6" r="2.6" />
+      <circle cx="17.5" cy="18" r="2.6" />
+      <path d="m8.3 10.8 6.9-3.6M8.3 13.2l6.9 3.6" />
+    </>
+  ),
+  sun: (
+    <>
+      <circle cx="12" cy="12" r="4" />
+      <path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M19.1 4.9l-1.8 1.8M6.7 17.3l-1.8 1.8" />
+    </>
+  ),
+  moon: <path d="M20.5 14.3A8.5 8.5 0 1 1 9.7 3.5a6.8 6.8 0 0 0 10.8 10.8Z" />,
 };
 
 type Props = {
