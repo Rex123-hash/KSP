@@ -2,7 +2,8 @@ import { useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { Icon, type IconName } from "../components/Icon";
 import { Emblem } from "../components/Emblem";
-import backdrop from "../assets/login-backdrop.webp";
+import building from "../assets/login-building.webp";
+import stateMap from "../assets/login-map.webp";
 import "./Login.css";
 
 /**
@@ -51,7 +52,8 @@ export function Login() {
       <div className="login__main">
         {/* --- Left: brand --------------------------------------------- */}
         <section className="login__brand">
-          <img className="login__backdrop" src={backdrop} alt="" aria-hidden="true" />
+          <img className="login__map" src={stateMap} alt="" aria-hidden="true" />
+          <img className="login__building" src={building} alt="" aria-hidden="true" />
 
           <header className="login__brand-head">
             <Emblem size={46} />

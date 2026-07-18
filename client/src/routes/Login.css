@@ -36,31 +36,32 @@
   }
 }
 
-/* The supplied asset already carries the Vidhana Soudha, the Karnataka outline
-   and the node network, pre-faded against an off-white ground that matches
-   --surface-page. It needs no additional treatment in light mode. */
-/* Anchored to the foot at full width rather than `cover`: the asset is 3:2 and
-   this column is taller than it is wide, so cover would crop the Karnataka
-   outline out of frame entirely. Bottom-anchoring keeps the whole composition
-   and lets the feature card sit over the building's base, as in the comp. */
-/* Overscaled past the column width and bled off the left edge.
-   The asset is a wide 3:2 side-by-side arrangement (building left, map right)
-   while this column is portrait, so at 100% the architecture reads as a distant
-   smudge. Blowing it up to ~134% and letting it run off-canvas puts the
-   building at the foot and the outline up beside the headline, which is the
-   arrangement in the comp. Two separate cutouts would let us place each one
-   properly instead of overscaling a fixed composition. */
-/* The source was a flat white-background image; its near-white ground has been
-   keyed to alpha so it sits on the surface with no rectangular seam. Content
-   fills most of the frame, so it needs only mild overscale. */
-.login__backdrop {
+/* Two independent layers. The building cutout has soft faded edges (its lower
+   and side boundaries dissolve into alpha), so it blends into the surface
+   instead of reading as a pasted rectangle — the finish the reference asks for.
+   The state outline sits above-right as its own faint layer. */
+.login__building,
+.login__map {
   position: absolute;
-  left: -11%;
-  bottom: 2%;
-  width: 132%;
-  height: auto;
   pointer-events: none;
   user-select: none;
+}
+
+/* Building: full-width at the foot, bleeding off both edges, dome up at the
+   tagline line, base tucked behind the feature card. */
+.login__building {
+  left: -8%;
+  bottom: -2%;
+  width: 116%;
+  height: auto;
+}
+
+/* State outline: upper centre-right, clear of the headline text and the card. */
+.login__map {
+  right: 4%;
+  top: 10%;
+  width: 58%;
+  height: auto;
 }
 
 
