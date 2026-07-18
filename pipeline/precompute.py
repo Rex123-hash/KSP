@@ -44,9 +44,12 @@ def precompute(conn):
 
     # ---- KPIs ---------------------------------------------------------------
     def clearance(rows):
-        cs = [r for r in rows if r[10]]
+        # Detection rate: chargesheeted out of cases that reached a disposition
+        # (A/B/C). Dividing by total would understate it, since recent cases are
+        # still under investigation and not yet disposed.
+        disposed = [r for r in rows if r[10]]
         a = sum(1 for r in rows if r[10] == "A")
-        return (a / len(rows) * 100) if rows else 0.0
+        return (a / len(disposed) * 100) if disposed else 0.0
 
     def undetected(rows):
         return sum(1 for r in rows if r[10] == "C")
@@ -60,7 +63,7 @@ def precompute(conn):
                 pass
         return sum(ds) / len(ds) if ds else 0.0
 
-    def weekly_spark(rows, weeks=14):
+    def weekly_spark(rows, weeks=9):
         buckets = [0] * weeks
         for r in rows:
             d = _d(r[1])
@@ -86,14 +89,14 @@ def precompute(conn):
     d = cr_cur - cr_prev
     kpis.append(("clearance-rate", "Clearance Rate", f"{cr_cur:.1f}%",
                  f"{abs(d):.1f}%", "up" if d >= 0 else "down", "good",
-                 weekly_spark([r for r in cur_cases if r[10] == "A"])))
+                 weekly_spark(cur_cases)))
 
     ud_cur, ud_prev = undetected(cur_cases), undetected(prev_cases)
     d = pct_delta(ud_cur, ud_prev)
     kpis.append(("cases-undetected", "Cases Undetected", f"{ud_cur:,}",
                  f"{abs(d):.1f}%", "down" if d <= 0 else "up",
                  "good" if d <= 0 else "bad",
-                 weekly_spark([r for r in cur_cases if r[10] == "C"])))
+                 weekly_spark(cur_cases)))
 
     dl_cur, dl_prev = avg_delay(cur_cases), avg_delay(prev_cases)
     d = dl_cur - dl_prev
