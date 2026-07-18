@@ -55,9 +55,9 @@
    fills most of the frame, so it needs only mild overscale. */
 .login__backdrop {
   position: absolute;
-  left: -10%;
-  bottom: -3%;
-  width: 128%;
+  left: -11%;
+  bottom: 2%;
+  width: 132%;
   height: auto;
   pointer-events: none;
   user-select: none;
