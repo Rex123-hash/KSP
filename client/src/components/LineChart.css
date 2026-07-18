@@ -1,0 +1,24 @@
+.linechart {
+  width: 100%;
+}
+
+.linechart__svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.linechart__ytick {
+  fill: var(--ink-muted);
+  font-family: var(--font-sans);
+  font-size: 11px;
+  text-anchor: end;
+  dominant-baseline: central;
+}
+
+.linechart__xtick {
+  fill: var(--ink-muted);
+  font-family: var(--font-sans);
+  font-size: 11px;
+  text-anchor: middle;
+}

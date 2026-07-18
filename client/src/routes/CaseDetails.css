@@ -1,0 +1,319 @@
+.cd-flip {
+  transform: scaleX(-1);
+}
+
+/* --- Header strip --------------------------------------------------------- */
+
+.cd-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px 40px;
+  padding: 18px 22px;
+  margin-bottom: 16px;
+  background: var(--surface-card);
+  border: 1px solid var(--line-hairline);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.cd-strip__fir {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 18px;
+  background: var(--brand-green-050);
+  border-radius: var(--radius-md);
+}
+
+.cd-strip__fir-label {
+  font-size: 11px;
+  color: var(--ink-muted);
+}
+
+.cd-strip__fir-no {
+  font-size: var(--text-title);
+  font-weight: 750;
+  color: var(--brand-green-700);
+}
+
+.cd-strip__field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.cd-strip__label {
+  font-size: 11px;
+  color: var(--ink-muted);
+}
+
+.cd-strip__value {
+  font-size: var(--text-body);
+  font-weight: 650;
+  color: var(--ink-primary);
+}
+
+/* --- Tabs ----------------------------------------------------------------- */
+
+.cd-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--line-hairline);
+}
+
+.cd-tab {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 12px 16px;
+  font-size: var(--text-body);
+  font-weight: 550;
+  color: var(--ink-secondary);
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+
+.cd-tab:hover {
+  color: var(--brand-green-700);
+}
+
+.cd-tab.is-active {
+  color: var(--brand-green-700);
+  font-weight: 650;
+  border-bottom-color: var(--brand-green-700);
+}
+
+.cd-tab__count {
+  color: var(--ink-muted);
+  font-weight: 500;
+}
+
+.cd-tab.is-active .cd-tab__count {
+  color: var(--brand-green-600);
+}
+
+/* --- Body ----------------------------------------------------------------- */
+
+.cd-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr) minmax(0, 0.9fr);
+  gap: 16px;
+  align-items: start;
+  margin-bottom: 16px;
+}
+
+@media (max-width: 1200px) {
+  .cd-body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.cd-card {
+  padding: 18px;
+}
+
+.cd-card__title {
+  font-size: var(--text-label);
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--ink-primary);
+  margin-bottom: 14px;
+}
+
+/* Case information list */
+.cd-info {
+  margin: 0;
+}
+
+.cd-info__row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--line-hairline);
+}
+
+.cd-info__row:last-child {
+  border-bottom: none;
+}
+
+.cd-info__row dt {
+  font-size: var(--text-small);
+  color: var(--ink-muted);
+  flex-shrink: 0;
+}
+
+.cd-info__row dd {
+  margin: 0;
+  font-size: var(--text-small);
+  font-weight: 600;
+  color: var(--ink-primary);
+  text-align: right;
+}
+
+/* Location */
+.cd-loc {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.cd-loc__addr {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: var(--text-small);
+  color: var(--ink-secondary);
+}
+
+.cd-loc__addr svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+  color: var(--status-critical);
+}
+
+.cd-loc__link {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--brand-green-600);
+}
+
+.cd-loc__link:hover {
+  color: var(--brand-green-800);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* Case summary */
+.cd-summary {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cd-summary__row {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 12px 0;
+}
+
+.cd-summary__row + .cd-summary__row {
+  border-top: 1px solid var(--line-hairline);
+}
+
+.cd-summary__icon {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  color: var(--brand-green-600);
+  background: var(--brand-green-050);
+  border-radius: 8px;
+}
+
+.cd-summary__label {
+  flex: 1;
+  font-size: var(--text-small);
+  color: var(--ink-secondary);
+}
+
+.cd-summary__value {
+  font-size: var(--text-small);
+  font-weight: 650;
+  color: var(--ink-primary);
+}
+
+.cd-summary__badge {
+  padding: 3px 10px;
+  font-size: 11px;
+  font-weight: 650;
+  border-radius: var(--radius-pill);
+}
+
+.cd-summary__badge.is-warning {
+  color: var(--status-warning);
+  background: var(--status-warning-bg);
+}
+.cd-summary__badge.is-good {
+  color: var(--status-good);
+  background: var(--status-good-bg);
+}
+.cd-summary__badge.is-critical {
+  color: var(--status-critical);
+  background: var(--status-critical-bg);
+}
+
+/* --- Actions -------------------------------------------------------------- */
+
+.cd-actions {
+  padding: 18px;
+}
+
+.cd-actions__row {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+@media (max-width: 800px) {
+  .cd-actions__row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.cd-action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px;
+  font-size: var(--text-body);
+  font-weight: 600;
+  color: var(--ink-primary);
+  background: var(--surface-card);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-md);
+}
+
+.cd-action:hover {
+  background: var(--brand-green-050);
+  border-color: var(--brand-green-500);
+  color: var(--brand-green-700);
+}
+
+.cd-action.is-danger {
+  color: var(--status-critical);
+  border-color: var(--status-critical-bg);
+}
+
+.cd-action.is-danger:hover {
+  background: var(--status-critical-bg);
+  border-color: var(--status-critical);
+  color: var(--status-critical);
+}
+
+/* Status pill (mirrored for standalone navigation to /cases) */
+.cd-strip .pill {
+  display: inline-block;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+}
+.cd-strip .pill.is-under-investigation {
+  color: var(--status-warning);
+  background: var(--status-warning-bg);
+}

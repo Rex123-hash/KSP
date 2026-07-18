@@ -1,0 +1,41 @@
+.location-map {
+  position: relative;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 1px solid var(--line-hairline);
+}
+
+.location-map__canvas {
+  position: absolute;
+  inset: 0;
+}
+
+.location-map .leaflet-container {
+  height: 100%;
+  width: 100%;
+  background: var(--surface-sunken);
+  font-family: var(--font-sans);
+}
+
+.location-map .leaflet-control-attribution {
+  font-size: 9.5px;
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--ink-muted);
+}
+
+/* CSS teardrop pin — no image asset */
+.location-pin {
+  position: relative;
+}
+.location-pin__dot {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 26px;
+  height: 26px;
+  background: var(--status-critical);
+  border: 3px solid #fff;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
