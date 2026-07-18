@@ -1,6 +1,8 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { AppShell } from "./components/AppShell";
 import { CommandView } from "./routes/CommandView";
+import { MapHotspots } from "./routes/MapHotspots";
+import { PersonNetwork } from "./routes/PersonNetwork";
 import { Login } from "./routes/Login";
 import { Placeholder } from "./routes/Placeholder";
 
@@ -13,27 +15,9 @@ export default function App() {
         <Route element={<AppShell />}>
           <Route index element={<CommandView />} />
 
-          <Route
-            path="/map"
-            element={
-              <Placeholder
-                title="Map & Hotspots"
-                icon="map-pin"
-                body="Full-screen geospatial view with district drilldown to station level, time-of-day layering for spatiotemporal clusters, and crime-head filtering."
-              />
-            }
-          />
+          <Route path="/map" element={<MapHotspots />} />
 
-          <Route
-            path="/network"
-            element={
-              <Placeholder
-                title="Person & Network"
-                icon="network"
-                body="Resolves accused records into people across cases, then maps the associations between them. The database has no person ID — this screen is where that gets solved, and shown."
-              />
-            }
-          />
+          <Route path="/network" element={<PersonNetwork />} />
 
           <Route
             path="/trends"

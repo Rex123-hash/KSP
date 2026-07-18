@@ -33,7 +33,15 @@ const HEAT_GRADIENT = {
   1.0: "#d94436",
 };
 
-export function HotspotMap({ height = 380 }: { height?: number }) {
+export function HotspotMap({
+  height = 380,
+  showFilterChip = true,
+}: {
+  height?: number;
+  /** The full Map page moves crime-head filtering into its own top bar, so the
+   *  in-map chip is redundant there and gets hidden. */
+  showFilterChip?: boolean;
+}) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
 
@@ -105,12 +113,14 @@ export function HotspotMap({ height = 380 }: { height?: number }) {
         </div>
       </figure>
 
-      <div className="hotspot-map__filter">
-        <button type="button">
-          All Crime Heads
-          <Icon name="chevron-down" size={14} strokeWidth={2} />
-        </button>
-      </div>
+      {showFilterChip && (
+        <div className="hotspot-map__filter">
+          <button type="button">
+            All Crime Heads
+            <Icon name="chevron-down" size={14} strokeWidth={2} />
+          </button>
+        </div>
+      )}
     </div>
   );
 }
