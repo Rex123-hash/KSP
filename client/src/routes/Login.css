@@ -50,11 +50,14 @@
    building at the foot and the outline up beside the headline, which is the
    arrangement in the comp. Two separate cutouts would let us place each one
    properly instead of overscaling a fixed composition. */
+/* The source was a flat white-background image; its near-white ground has been
+   keyed to alpha so it sits on the surface with no rectangular seam. Content
+   fills most of the frame, so it needs only mild overscale. */
 .login__backdrop {
   position: absolute;
-  left: -20%;
-  bottom: -4%;
-  width: 155%;
+  left: -10%;
+  bottom: -3%;
+  width: 128%;
   height: auto;
   pointer-events: none;
   user-select: none;
