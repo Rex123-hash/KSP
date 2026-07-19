@@ -159,7 +159,21 @@ def resolve(conn):
     for root, members in clusters.items():
         rp_id += 1
         names = [rows[i][2] for i in members]
-        canonical = Counter(names).most_common(1)[0][0]
+        # Canonical = the cleanest display form: prefer a spaced name without the
+        # doubled-a transliteration artifact, then the most frequent among those.
+        freq = Counter(names)
+
+        def clean_score(n):
+            s = 0
+            if " " in n:
+                s += 3
+            if not re.search(r"a{2,}$", n):
+                s += 2
+            if not n.endswith("a"):
+                s += 1
+            return (s, freq[n])
+
+        canonical = max(names, key=clean_score)
         genders = [rows[i][4] for i in members]
         ages = [rows[i][3] for i in members if rows[i][3]]
         sims = cluster_sims.get(root, [])

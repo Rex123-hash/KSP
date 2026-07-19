@@ -5,8 +5,14 @@ import { useEffect, useState } from "react";
  * Node server in dev; the Catalyst API Gateway serves it in production).
  */
 
+// In dev, Vite proxies /api/<path> to the live Node server. In the production
+// build (deployed to Catalyst Web Client Hosting) there is no server, so we
+// read the pre-exported static snapshot at /api/<path>.json instead.
+const STATIC = import.meta.env.PROD;
+
 export async function apiGet<T>(path: string): Promise<T> {
-  const res = await fetch(`/api${path}`);
+  const url = STATIC ? `/api${path}.json` : `/api${path}`;
+  const res = await fetch(url);
   if (!res.ok) throw new Error(`API ${path} -> ${res.status}`);
   return res.json() as Promise<T>;
 }
@@ -41,4 +47,6 @@ export function useApi<T>(path: string): AsyncState<T> {
   return state;
 }
 
-export const downloadUrl = (kind: string) => `/api/report/download?kind=${kind}`;
+// Dev: dynamic CSV from the server. Prod: pre-exported static CSV file.
+export const downloadUrl = (kind: string) =>
+  STATIC ? `/api/download/${kind}.csv` : `/api/report/download?kind=${kind}`;

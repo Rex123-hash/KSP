@@ -306,16 +306,34 @@ function buildPerson(rpId) {
   };
 }
 
-// The default Person page focuses on the most connected repeat offender.
+// The default Person page focuses on a well-connected repeat offender whose
+// cluster is CLEAN (high cohesion) — so the resolved variants are unambiguously
+// the same name and the collapse reads clearly. Cohesion = ResolvedPerson.
+// Confidence; requiring it high avoids showcasing a transitive over-merge.
 app.get("/api/persons/featured", (_req, res) => {
-  const featured = one(`
-    SELECT rp.ResolvedPersonID id FROM ResolvedPerson rp
-    WHERE rp.CaseCount BETWEEN 5 AND 40
-    ORDER BY (SELECT COUNT(*) FROM PersonAssociation pa
-              WHERE pa.PersonA=rp.ResolvedPersonID OR pa.PersonB=rp.ResolvedPersonID) DESC,
-             rp.CaseCount DESC
-    LIMIT 1`);
-  res.json(buildPerson(featured.id));
+  const candidates = all(`
+    SELECT rp.ResolvedPersonID id, rp.CaseCount,
+           (SELECT COUNT(*) FROM PersonAssociation pa
+            WHERE pa.PersonA=rp.ResolvedPersonID OR pa.PersonB=rp.ResolvedPersonID) assoc
+    FROM ResolvedPerson rp
+    WHERE rp.CaseCount BETWEEN 6 AND 22 AND rp.Confidence >= 0.97
+    ORDER BY assoc DESC, rp.CaseCount DESC
+    LIMIT 30`);
+  // Prefer a candidate whose recorded variants all share one surname (last token).
+  let chosen = candidates[0];
+  for (const c of candidates) {
+    const names = all("SELECT DISTINCT NameAsRecorded n FROM PersonCaseLink WHERE ResolvedPersonID=?", c.id)
+      .map((r) => r.n.replace(/[^a-zA-Z ]/g, ""));
+    const surnames = new Set(
+      names.map((n) => {
+        const parts = n.trim().split(/\s+/);
+        // strip a trailing transliteration 'a' so "Gowda"/"Gowdaa" count as one
+        return (parts[parts.length - 1] || "").toLowerCase().replace(/a+$/, "");
+      })
+    );
+    if (surnames.size === 1) { chosen = c; break; }
+  }
+  res.json(buildPerson(chosen.id));
 });
 
 app.get("/api/persons/:id", (req, res) => {
@@ -466,4 +484,9 @@ app.get("/api/report/download", (req, res) => {
 
 app.get("/api/health", (_req, res) => res.json({ ok: true, cases: one("SELECT COUNT(*) c FROM CaseMaster").c }));
 
-app.listen(PORT, () => console.log(`KSP API on http://localhost:${PORT}  (${DATE_RANGE})`));
+export { app };
+
+// Only listen when run directly (not when imported by the static exporter).
+if (process.argv[1] && import.meta.url === `file://${process.argv[1].replace(/\\/g, "/")}`) {
+  app.listen(PORT, () => console.log(`KSP API on http://localhost:${PORT}  (${DATE_RANGE})`));
+}
