@@ -3,14 +3,24 @@ import { Icon } from "../components/Icon";
 import { Panel } from "../components/Panel";
 import { HotspotMap } from "../components/HotspotMap";
 import { Donut } from "../components/Donut";
-import {
-  crimeHeadSlices,
-  dateRangeLabel,
-  hotspotInsight,
-  mapFilters,
-  totalCasesInView,
-} from "../data/mapMock";
+import { PageState } from "../components/PageState";
+import { useApi } from "../api";
+import { useMeta } from "../meta";
+import { mapFilters, type CrimeHeadSlice } from "../data/mapMock";
 import "./MapHotspots.css";
+
+type MapData = {
+  insight: {
+    zone: string;
+    intensity: string;
+    delta: string;
+    peakTime: string;
+    topCrimeHead: string;
+    totalCases: string;
+  };
+  crimeHeads: CrimeHeadSlice[];
+  totalCases: string;
+};
 
 const FILTER_CHIPS: { key: string; label: string; value: string; icon?: never }[] = [
   { key: "crimeHead", label: "Crime Head", value: mapFilters.crimeHead },
@@ -23,6 +33,8 @@ const HOURS = ["12 AM", "4 AM", "8 AM", "12 PM", "4 PM", "8 PM", "12 AM"];
 
 export function MapHotspots() {
   const [hour, setHour] = useState(83); // slider 0–100, ~8 PM
+  const state = useApi<MapData>("/map");
+  const { dateRange } = useMeta();
 
   return (
     <>
@@ -36,7 +48,7 @@ export function MapHotspots() {
         <div className="page-controls">
           <button type="button" className="page-control">
             <Icon name="calendar" size={16} />
-            <span>{dateRangeLabel}</span>
+            <span>{dateRange}</span>
             <Icon name="chevron-down" size={14} strokeWidth={2} />
           </button>
           <button type="button" className="page-control">
@@ -93,50 +105,56 @@ export function MapHotspots() {
         </div>
 
         <div className="map-grid__rail">
-          <Panel title="Hotspot Insights">
-            <div className="insight">
-              <div className="insight__head">
-                <span className="insight__dot" />
-                <span className="insight__zone">{hotspotInsight.zone}</span>
-                <span className="insight__badge">{hotspotInsight.intensity}</span>
-              </div>
-              <p className="insight__delta">
-                <Icon name="arrow-up" size={13} strokeWidth={2.4} />
-                {hotspotInsight.delta} vs last period
-              </p>
+          <PageState state={state}>
+            {(data) => (
+              <>
+                <Panel title="Hotspot Insights">
+                  <div className="insight">
+                    <div className="insight__head">
+                      <span className="insight__dot" />
+                      <span className="insight__zone">{data.insight.zone}</span>
+                      <span className="insight__badge">{data.insight.intensity}</span>
+                    </div>
+                    <p className="insight__delta">
+                      <Icon name="arrow-up" size={13} strokeWidth={2.4} />
+                      {data.insight.delta} risk score
+                    </p>
 
-              <dl className="insight__rows">
-                <InsightRow icon="clock" label="Peak Time" value={hotspotInsight.peakTime} />
-                <InsightRow icon="tag" label="Top Crime Head" value={hotspotInsight.topCrimeHead} />
-                <InsightRow icon="file-text" label="Total Cases" value={hotspotInsight.totalCases} />
-              </dl>
+                    <dl className="insight__rows">
+                      <InsightRow icon="clock" label="Peak Time" value={data.insight.peakTime} />
+                      <InsightRow icon="tag" label="Top Crime Head" value={data.insight.topCrimeHead} />
+                      <InsightRow icon="file-text" label="Total Cases" value={data.insight.totalCases} />
+                    </dl>
 
-              <button type="button" className="insight__cta">
-                View Zone Details
-                <Icon name="arrow-right" size={16} strokeWidth={2} />
-              </button>
-            </div>
-          </Panel>
+                    <button type="button" className="insight__cta">
+                      View Zone Details
+                      <Icon name="arrow-right" size={16} strokeWidth={2} />
+                    </button>
+                  </div>
+                </Panel>
 
-          <Panel title="Top Crime Heads" note="(in view)">
-            <div className="crimeheads">
-              <Donut
-                slices={crimeHeadSlices}
-                centerValue={totalCasesInView}
-                centerLabel="Total Cases"
-              />
-              <ul className="crimeheads__legend">
-                {crimeHeadSlices.map((s) => (
-                  <li key={s.label} className="crimeheads__row">
-                    <span className="crimeheads__swatch" style={{ background: s.tone }} />
-                    <span className="crimeheads__name">{s.label}</span>
-                    <span className="crimeheads__pct tabular">{s.pct}%</span>
-                    <span className="crimeheads__count tabular">({s.count})</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </Panel>
+                <Panel title="Top Crime Heads" note="(in view)">
+                  <div className="crimeheads">
+                    <Donut
+                      slices={data.crimeHeads}
+                      centerValue={data.totalCases}
+                      centerLabel="Total Cases"
+                    />
+                    <ul className="crimeheads__legend">
+                      {data.crimeHeads.map((s) => (
+                        <li key={s.label} className="crimeheads__row">
+                          <span className="crimeheads__swatch" style={{ background: s.tone }} />
+                          <span className="crimeheads__name">{s.label}</span>
+                          <span className="crimeheads__pct tabular">{s.pct}%</span>
+                          <span className="crimeheads__count tabular">({s.count})</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </Panel>
+              </>
+            )}
+          </PageState>
         </div>
       </div>
     </>

@@ -1,0 +1,66 @@
+.dl-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.dl-card {
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  background: var(--surface-card);
+  border: 1px solid var(--line-hairline);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.dl-card__icon {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  margin-bottom: 14px;
+  color: var(--brand-green-600);
+  background: var(--brand-green-050);
+  border-radius: var(--radius-md);
+}
+
+.dl-card__title {
+  font-size: var(--text-title);
+  font-weight: 700;
+  color: var(--ink-primary);
+}
+
+.dl-card__desc {
+  margin-top: 6px;
+  font-size: var(--text-small);
+  line-height: 1.5;
+  color: var(--ink-secondary);
+}
+
+.dl-card__meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 12px;
+  font-size: 12px;
+  color: var(--ink-muted);
+}
+
+.dl-card__btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 16px;
+  padding: 11px;
+  font-size: var(--text-body);
+  font-weight: 650;
+  color: var(--ink-on-inverse);
+  background: var(--brand-green-800);
+  border-radius: var(--radius-md);
+}
+
+.dl-card__btn:hover {
+  background: var(--brand-green-900);
+}

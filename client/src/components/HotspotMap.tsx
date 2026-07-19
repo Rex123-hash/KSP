@@ -1,24 +1,29 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import "leaflet.heat";
 import { Icon } from "./Icon";
-import { generateHeatPoints, MAP_CENTER, MAP_ZOOM } from "../data/mock";
+import { apiGet } from "../api";
 import "./HotspotMap.css";
 
 /**
  * Case-density heat layer over Bengaluru.
  *
- * Points are currently generated client-side from mock.ts. Once the pipeline
- * lands these come from precomputed hotspot grids (architecture.md §5.3) —
- * real CaseMaster.latitude / .longitude, aggregated server-side. The component
- * boundary is deliberately the same either way: it takes points, it draws them.
+ * Points come from /api/hotspots — real CaseMaster latitude/longitude with an
+ * hour bucket for the time filter, computed by the pipeline. The component takes
+ * points and draws them.
  *
  * On the ramp: this uses the conventional green→red heat gradient rather than a
  * single-hue sequential ramp. That's a knowing exception to the sequential rule
  * in design.md §7 — the convention is entrenched for crime density and police
  * users read it natively. It is the ONLY place a multi-hue ramp is allowed.
  */
+
+type HotspotResponse = {
+  center: [number, number];
+  zoom: number;
+  points: [number, number, number, number, number][]; // lat,lng,weight,hour,head
+};
 
 const TILE_URL = "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png";
 
@@ -44,38 +49,52 @@ export function HotspotMap({
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
+  const heatRef = useRef<L.HeatLayer | null>(null);
+  const [data, setData] = useState<HotspotResponse | null>(null);
 
+  // Create the map once.
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
-
     const map = L.map(containerRef.current, {
-      center: MAP_CENTER,
-      zoom: MAP_ZOOM,
+      center: [12.955, 77.595],
+      zoom: 11,
       zoomControl: false,
       attributionControl: true,
       scrollWheelZoom: false, // A demo map that hijacks page scroll is a liability.
     });
-
-    L.tileLayer(TILE_URL, {
-      attribution: ATTRIBUTION,
-      maxZoom: 19,
-    }).addTo(map);
-
-    L.heatLayer(generateHeatPoints(), {
-      radius: 22,
-      blur: 26,
-      maxZoom: 13,
-      minOpacity: 0.32,
-      gradient: HEAT_GRADIENT,
-    }).addTo(map);
-
+    L.tileLayer(TILE_URL, { attribution: ATTRIBUTION, maxZoom: 19 }).addTo(map);
     mapRef.current = map;
-
     return () => {
       map.remove();
       mapRef.current = null;
+      heatRef.current = null;
     };
   }, []);
+
+  // Fetch points once.
+  useEffect(() => {
+    apiGet<HotspotResponse>("/hotspots").then(setData).catch(() => setData(null));
+  }, []);
+
+  // Draw / update the heat layer when points arrive.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !data) return;
+    const latlngs = data.points.map((p) => [p[0], p[1], p[2]] as [number, number, number]);
+    if (heatRef.current) {
+      heatRef.current.setLatLngs(latlngs);
+    } else {
+      heatRef.current = L.heatLayer(latlngs, {
+        radius: 18,
+        blur: 24,
+        maxZoom: 13,
+        minOpacity: 0.3,
+        max: 3,
+        gradient: HEAT_GRADIENT,
+      }).addTo(map);
+    }
+    map.setView(data.center, data.zoom);
+  }, [data]);
 
   return (
     <div className="hotspot-map" style={{ height }}>

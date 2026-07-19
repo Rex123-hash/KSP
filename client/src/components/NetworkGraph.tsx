@@ -1,5 +1,18 @@
-import { networkNodes, focusPerson, tierOf, type NetworkNode } from "../data/networkMock";
 import "./NetworkGraph.css";
+
+export type NetworkNode = {
+  id: string;
+  name: string;
+  confidence: number;
+  kind: "known" | "associated" | "unknown";
+  angle: number;
+};
+
+function tierOf(score: number): "high" | "medium" | "low" {
+  if (score >= 75) return "high";
+  if (score >= 60) return "medium";
+  return "low";
+}
 
 /**
  * Criminal-association graph. A resolved person at the centre, linked persons on
@@ -50,13 +63,21 @@ const EDGE_STYLE: Record<string, { stroke: string; dash?: string; width: number 
   low: { stroke: "var(--brand-gold-500)", dash: "2 6", width: 1.6 },
 };
 
-export function NetworkGraph() {
+export function NetworkGraph({
+  focusName,
+  focusConfidence,
+  nodes,
+}: {
+  focusName: string;
+  focusConfidence: number;
+  nodes: NetworkNode[];
+}) {
   return (
     <div className="netgraph">
       <svg viewBox={`0 0 ${W} ${H}`} className="netgraph__svg" role="img"
-        aria-label={`Association network for ${focusPerson.name}`}>
+        aria-label={`Association network for ${focusName}`}>
         {/* Edges first, under the nodes */}
-        {networkNodes.map((n) => {
+        {nodes.map((n) => {
           const p = pos(n.angle);
           const st = EDGE_STYLE[tierOf(n.confidence)];
           return (
@@ -75,7 +96,7 @@ export function NetworkGraph() {
         })}
 
         {/* Ring nodes */}
-        {networkNodes.map((n) => (
+        {nodes.map((n) => (
           <Node key={n.id} node={n} />
         ))}
 
@@ -85,13 +106,13 @@ export function NetworkGraph() {
             stroke="var(--brand-gold-500)" strokeWidth="2" />
           <circle cx={CX} cy={CY} r={CENTER_R} fill="var(--brand-green-800)" />
           <text x={CX} y={CY} className="netgraph__initials" fontSize="26">
-            {initials(focusPerson.name)}
+            {initials(focusName)}
           </text>
           <text x={CX} y={CY + CENTER_R + 22} className="netgraph__name netgraph__name--center">
-            {focusPerson.name}
+            {focusName}
           </text>
           <text x={CX} y={CY + CENTER_R + 38} className="netgraph__conf netgraph__conf--center">
-            Confidence: {focusPerson.confidence}%
+            Confidence: {focusConfidence}%
           </text>
         </g>
       </svg>

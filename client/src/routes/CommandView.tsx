@@ -1,19 +1,49 @@
-import { Icon } from "../components/Icon";
+import { Icon, type IconName } from "../components/Icon";
 import { Panel } from "../components/Panel";
 import { StatTile } from "../components/StatTile";
 import { HotspotMap } from "../components/HotspotMap";
-import {
-  alerts,
-  dateRange,
-  kpis,
-  quickSummary,
-  recentFirs,
-  type Alert,
-  type Fir,
-} from "../data/mock";
+import { PageState } from "../components/PageState";
+import { useApi } from "../api";
+import { useMeta } from "../meta";
+import type { Kpi } from "../data/mock";
 import "./CommandView.css";
 
+type Alert = {
+  id: string;
+  title: string;
+  delta: string;
+  deltaLabel: string;
+  where: string;
+  when: string;
+  severity: "critical" | "serious" | "warning" | "good";
+};
+type Fir = {
+  firNo: string;
+  station: string;
+  crimeHead: string;
+  registeredOn: string;
+  status: string;
+  statusSlug: string;
+};
+type SummaryItem = {
+  id: string;
+  label: string;
+  value: string;
+  sub: string;
+  icon: IconName;
+  subSentiment?: "good" | "bad";
+};
+type CommandData = {
+  kpis: Kpi[];
+  alerts: Alert[];
+  quickSummary: SummaryItem[];
+  recentFirs: Fir[];
+};
+
 export function CommandView() {
+  const state = useApi<CommandData>("/command");
+  const { dateRange } = useMeta();
+
   return (
     <>
       <div className="cmd__head">
@@ -37,61 +67,67 @@ export function CommandView() {
         </div>
       </div>
 
-      <div className="cmd__kpis">
-        {kpis.map((kpi) => (
-          <StatTile key={kpi.id} kpi={kpi} />
-        ))}
-      </div>
-
-      <div className="cmd__grid">
-        <div className="cmd__col">
-          <Panel
-            title="Crime Hotspots"
-            note="(this period)"
-            action={{ label: "View Full Map", icon: "external" }}
-            bleed
-          >
-            <HotspotMap height={392} />
-          </Panel>
-
-          <Panel title="Quick Summary" note="(this period)">
-            <ul className="summary">
-              {quickSummary.map((item) => (
-                <li key={item.id} className="summary__item">
-                  <span className="summary__icon">
-                    <Icon name={item.icon} size={17} />
-                  </span>
-                  <div className="summary__text">
-                    <p className="summary__label">{item.label}</p>
-                    <p className="summary__value">{item.value}</p>
-                    <p
-                      className={`summary__sub${
-                        item.subSentiment ? ` is-${item.subSentiment}` : ""
-                      }`}
-                    >
-                      {item.sub}
-                    </p>
-                  </div>
-                </li>
+      <PageState state={state}>
+        {(data) => (
+          <>
+            <div className="cmd__kpis">
+              {data.kpis.map((kpi) => (
+                <StatTile key={kpi.id} kpi={kpi} />
               ))}
-            </ul>
-          </Panel>
-        </div>
+            </div>
 
-        <div className="cmd__col">
-          <Panel title="Active Alerts" action={{ label: "View All" }} bleed>
-            <ul className="alerts">
-              {alerts.map((alert) => (
-                <AlertRow key={alert.id} alert={alert} />
-              ))}
-            </ul>
-          </Panel>
+            <div className="cmd__grid">
+              <div className="cmd__col">
+                <Panel
+                  title="Crime Hotspots"
+                  note="(this period)"
+                  action={{ label: "View Full Map", icon: "external" }}
+                  bleed
+                >
+                  <HotspotMap height={392} />
+                </Panel>
 
-          <Panel title="Recent FIRs" action={{ label: "View All" }} bleed>
-            <FirTable rows={recentFirs} />
-          </Panel>
-        </div>
-      </div>
+                <Panel title="Quick Summary" note="(this period)">
+                  <ul className="summary">
+                    {data.quickSummary.map((item) => (
+                      <li key={item.id} className="summary__item">
+                        <span className="summary__icon">
+                          <Icon name={item.icon} size={17} />
+                        </span>
+                        <div className="summary__text">
+                          <p className="summary__label">{item.label}</p>
+                          <p className="summary__value">{item.value}</p>
+                          <p
+                            className={`summary__sub${
+                              item.subSentiment ? ` is-${item.subSentiment}` : ""
+                            }`}
+                          >
+                            {item.sub}
+                          </p>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </Panel>
+              </div>
+
+              <div className="cmd__col">
+                <Panel title="Active Alerts" action={{ label: "View All" }} bleed>
+                  <ul className="alerts">
+                    {data.alerts.map((alert) => (
+                      <AlertRow key={alert.id} alert={alert} />
+                    ))}
+                  </ul>
+                </Panel>
+
+                <Panel title="Recent FIRs" action={{ label: "View All" }} bleed>
+                  <FirTable rows={data.recentFirs} />
+                </Panel>
+              </div>
+            </div>
+          </>
+        )}
+      </PageState>
 
       <footer className="cmd__footer">
         © 2026 Karnataka State Police <span aria-hidden="true">|</span> State
@@ -104,9 +140,7 @@ export function CommandView() {
 /* -------------------------------------------------------------------------- */
 
 function AlertRow({ alert }: { alert: Alert }) {
-  // Status colour never travels alone: it always ships with an icon and a label.
   const rising = alert.severity !== "good";
-
   return (
     <li className={`alerts__row is-${alert.severity}`}>
       <span className="alerts__icon">
@@ -159,13 +193,7 @@ function FirTable({ rows }: { rows: Fir[] }) {
               <td>{fir.crimeHead}</td>
               <td className="tabular fir-table__when">{fir.registeredOn}</td>
               <td>
-                <span
-                  className={`pill is-${fir.status
-                    .toLowerCase()
-                    .replace(/\s+/g, "-")}`}
-                >
-                  {fir.status}
-                </span>
+                <span className={`pill is-${fir.statusSlug}`}>{fir.status}</span>
               </td>
             </tr>
           ))}

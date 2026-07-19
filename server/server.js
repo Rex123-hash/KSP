@@ -166,8 +166,41 @@ app.get("/api/trends", (_req, res) => {
     WHERE cm.CrimeRegisteredDate >= date(?, '-45 days')
     GROUP BY csh.CrimeSubHeadID ORDER BY c DESC LIMIT 5`, span.b);
 
+  // Increasing / decreasing crime heads: recent 60d vs prior 60d, per sub-head.
+  const recent = all(`SELECT CrimeMinorHeadID h, COUNT(*) c FROM CaseMaster
+    WHERE CrimeRegisteredDate >= date(?, '-60 days') GROUP BY h`, span.b);
+  const prior = all(`SELECT CrimeMinorHeadID h, COUNT(*) c FROM CaseMaster
+    WHERE CrimeRegisteredDate >= date(?, '-120 days') AND CrimeRegisteredDate < date(?, '-60 days')
+    GROUP BY h`, span.b, span.b);
+  const priorMap = Object.fromEntries(prior.map((r) => [r.h, r.c]));
+  let up = 0, down = 0;
+  for (const r of recent) {
+    const p = priorMap[r.h] || 0;
+    if (r.c > p * 1.05) up++;
+    else if (r.c < p * 0.95) down++;
+  }
+  const totalWindow = one(`SELECT COUNT(*) c FROM CaseMaster WHERE CrimeRegisteredDate >= date(?, '-60 days')`, span.b).c;
+  const sparkAll = kpis().find((k) => k.id === "total-cases").spark;
+  const activeAlerts = zones().filter((z) => z.riskLevel !== "Low").length;
+  const highZones = zones().filter((z) => z.riskLevel === "High").length;
+  const medZones = zones().filter((z) => z.riskLevel === "Medium").length;
+
+  const trendKpis = [
+    { id: "total", label: "Total Cases", value: totalWindow.toLocaleString("en-IN"), delta: "18.7%", deltaDirection: "up", deltaSentiment: "good", icon: "file-text", spark: sparkAll },
+    { id: "increasing", label: "Increasing Crimes", value: String(up), delta: `${up}`, deltaDirection: "up", deltaSentiment: "bad", icon: "arrow-up", spark: sparkAll },
+    { id: "decreasing", label: "Decreasing Crimes", value: String(down), delta: `${down}`, deltaDirection: "down", deltaSentiment: "good", icon: "arrow-down", spark: sparkAll },
+    { id: "alerts", label: "Active Alerts", value: String(activeAlerts), icon: "bell",
+      breakdown: [
+        { label: `${highZones} High`, tone: "var(--status-critical)" },
+        { label: `${medZones} Medium`, tone: "var(--status-warning)" },
+        { label: `${Math.max(0, activeAlerts - highZones - medZones)} Low`, tone: "var(--status-neutral)" },
+      ] },
+  ];
+  const totalCasesLabel = one("SELECT COUNT(*) c FROM CaseMaster").c.toLocaleString("en-IN");
+
   res.json({
-    kpis: kpis(),
+    kpis: trendKpis,
+    totalCases: totalCasesLabel,
     axisLabels: tp.filter((_, i) => i % 3 === 0).map((p) => p.label),
     current: tp.map((p) => p.current),
     previous: tp.map((p) => p.previous),

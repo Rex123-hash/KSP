@@ -1,6 +1,6 @@
 import { Icon } from "./Icon";
 import { Emblem } from "./Emblem";
-import { currentOfficer } from "../data/mock";
+import { useMeta } from "../meta";
 import "./TopBar.css";
 
 /**
@@ -10,7 +10,8 @@ import "./TopBar.css";
  */
 
 export function TopBar() {
-  const trail = currentOfficer.breadcrumb;
+  const { officer } = useMeta();
+  const trail = officer.breadcrumb;
 
   return (
     <header className="topbar">
@@ -45,11 +46,11 @@ export function TopBar() {
         <button
           type="button"
           className="topbar__icon-btn"
-          aria-label={`Notifications, ${currentOfficer.notifications} unread`}
+          aria-label={`Notifications, ${officer.notifications} unread`}
         >
           <Icon name="bell" size={19} />
-          {currentOfficer.notifications > 0 && (
-            <span className="topbar__badge">{currentOfficer.notifications}</span>
+          {officer.notifications > 0 && (
+            <span className="topbar__badge">{officer.notifications}</span>
           )}
         </button>
 
@@ -57,8 +58,8 @@ export function TopBar() {
 
         <button type="button" className="topbar__user">
           <span className="topbar__user-text">
-            <span className="topbar__user-name">{currentOfficer.name}</span>
-            <span className="topbar__user-rank">{currentOfficer.rank}</span>
+            <span className="topbar__user-name">{officer.name}</span>
+            <span className="topbar__user-rank">{officer.rank}</span>
           </span>
           <Emblem size={34} medallion />
           <Icon name="chevron-down" size={15} strokeWidth={2} />

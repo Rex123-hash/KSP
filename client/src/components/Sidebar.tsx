@@ -1,7 +1,7 @@
 import { NavLink } from "react-router-dom";
 import { Icon, type IconName } from "./Icon";
 import { Emblem } from "./Emblem";
-import { currentOfficer } from "../data/mock";
+import { useMeta } from "../meta";
 import "./Sidebar.css";
 
 /**
@@ -25,6 +25,7 @@ const NAV_SECONDARY: { to: string; label: string; icon: IconName }[] = [
 ];
 
 export function Sidebar() {
+  const { officer } = useMeta();
   return (
     <aside className="sidebar">
       <div className="sidebar__brand">
@@ -77,8 +78,8 @@ export function Sidebar() {
           </span>
           <span className="eyebrow sidebar__scope-eyebrow">Current Scope</span>
         </div>
-        <p className="sidebar__scope-unit">{currentOfficer.scopeLabel}</p>
-        <p className="sidebar__scope-rank">{currentOfficer.rank}</p>
+        <p className="sidebar__scope-unit">{officer.scopeLabel}</p>
+        <p className="sidebar__scope-rank">{officer.rank}</p>
         <button type="button" className="sidebar__scope-change">
           Change Scope
           <Icon name="chevron-right" size={13} strokeWidth={2} />
