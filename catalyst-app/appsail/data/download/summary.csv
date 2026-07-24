@@ -1,0 +1,6 @@
+metric,label,value,delta,direction
+total-cases,Total Cases,667,15.1%,down
+clearance-rate,Clearance Rate,71.4%,2.3%,down
+cases-undetected,Cases Undetected,43,37.7%,down
+reporting-delay,Avg. Reporting Delay,1.7 days,0.0,up
+active-alerts,Active Alerts,6,5,up

@@ -5,13 +5,22 @@ import { useEffect, useState } from "react";
  * Node server in dev; the Catalyst API Gateway serves it in production).
  */
 
-// In dev, Vite proxies /api/<path> to the live Node server. In the production
-// build (deployed to Catalyst Web Client Hosting) there is no server, so we
-// read the pre-exported static snapshot at /api/<path>.json instead.
+// Three modes:
+//  - CATALYST_API set  -> hit a live Catalyst API (Functions/AppSail) at that URL
+//  - production build   -> read the static snapshot under <base>api/<path>.json
+//  - dev                -> Vite proxies /api/<path> to the local Node server
+// BASE_URL is "/" in dev and "/app/" in the Catalyst deploy, so static paths
+// resolve correctly under the hosting subpath.
 const STATIC = import.meta.env.PROD;
+const BASE = import.meta.env.BASE_URL;
+const CATALYST_API = import.meta.env.VITE_CATALYST_API_URL || "";
 
 export async function apiGet<T>(path: string): Promise<T> {
-  const url = STATIC ? `/api${path}.json` : `/api${path}`;
+  const url = CATALYST_API
+    ? `${CATALYST_API.replace(/\/$/, "")}/api${path}`
+    : STATIC
+      ? `${BASE}api${path}.json`
+      : `${BASE}api${path}`;
   const res = await fetch(url);
   if (!res.ok) throw new Error(`API ${path} -> ${res.status}`);
   return res.json() as Promise<T>;
@@ -47,6 +56,10 @@ export function useApi<T>(path: string): AsyncState<T> {
   return state;
 }
 
-// Dev: dynamic CSV from the server. Prod: pre-exported static CSV file.
+// Dev: dynamic CSV from the server. Prod/static: pre-exported CSV under <base>.
 export const downloadUrl = (kind: string) =>
-  STATIC ? `/api/download/${kind}.csv` : `/api/report/download?kind=${kind}`;
+  CATALYST_API
+    ? `${CATALYST_API.replace(/\/$/, "")}/api/download/${kind}.csv`
+    : STATIC
+      ? `${BASE}api/download/${kind}.csv`
+      : `/api/report/download?kind=${kind}`;

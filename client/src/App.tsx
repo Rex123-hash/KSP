@@ -1,4 +1,4 @@
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { MetaProvider } from "./meta";
 import { AppShell } from "./components/AppShell";
 import { CommandView } from "./routes/CommandView";
@@ -13,7 +13,7 @@ import { Login } from "./routes/Login";
 
 export default function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={import.meta.env.BASE_URL.replace(/\/$/, "")}>
       <MetaProvider>
       <Routes>
         <Route path="/login" element={<Login />} />
@@ -35,6 +35,10 @@ export default function App() {
 
           <Route path="/settings" element={<Settings />} />
         </Route>
+
+        {/* Landing on /app/index.html (the Catalyst access URL) or any unknown
+            path falls back to the Command View. */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       </MetaProvider>
     </BrowserRouter>
