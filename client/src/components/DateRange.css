@@ -1,0 +1,45 @@
+.daterange {
+  position: relative;
+}
+
+.daterange__menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 40;
+  min-width: 200px;
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  background: var(--surface-card);
+  border: 1px solid var(--line-hairline);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+}
+
+.daterange__menu button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 11px;
+  font-size: var(--text-small);
+  color: var(--ink-secondary);
+  border-radius: var(--radius-sm);
+  text-align: left;
+}
+
+.daterange__menu button:hover {
+  background: var(--brand-green-050);
+  color: var(--ink-primary);
+}
+
+.daterange__menu button.is-active {
+  color: var(--brand-green-700);
+  font-weight: 650;
+}
+
+.daterange__menu button.is-active svg {
+  color: var(--brand-green-600);
+}

@@ -56,7 +56,7 @@ export function Settings() {
               <ProfileFact label="Phone" value={profile.phone} />
             </dl>
           </div>
-          <button type="button" className="st-btn st-btn--ghost" onClick={() => protoToast("Profile editing needs a live backend")}>
+          <button type="button" className="st-btn st-btn--ghost" onClick={() => protoToast("Read-only deployment — profile can’t be edited")}>
             <Icon name="file-check" size={15} /> Edit Profile
           </button>
         </section>
@@ -148,7 +148,7 @@ export function Settings() {
           <PasswordField label="Current Password" placeholder="Enter current password" />
           <PasswordField label="New Password" placeholder="Enter new password" />
           <PasswordField label="Confirm New Password" placeholder="Confirm new password" />
-          <button type="button" className="st-btn st-btn--solid" onClick={() => protoToast("Password change needs Catalyst Authentication")}>
+          <button type="button" className="st-btn st-btn--solid" onClick={() => protoToast("Read-only deployment — password can’t be changed")}>
             <Icon name="lock" size={15} /> Update Password
           </button>
         </section>

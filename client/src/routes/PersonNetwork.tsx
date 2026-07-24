@@ -113,7 +113,7 @@ export function PersonNetwork() {
           <button
             type="button"
             className="page-control"
-            onClick={() => protoToast("Advanced filters need a live query backend")}
+            onClick={() => protoToast("Use the search box to find any person")}
           >
             <Icon name="filter" size={16} />
             <span>Advanced Filters</span>

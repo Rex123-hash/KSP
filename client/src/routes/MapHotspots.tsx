@@ -110,7 +110,7 @@ export function MapHotspots() {
         <button
           type="button"
           className="filter-chip"
-          onClick={() => protoToast("Cluster view needs a live query backend")}
+          onClick={() => protoToast("Cluster view isn’t in this build yet")}
         >
           <span className="filter-chip__label">View By</span>
           <span className="filter-chip__value">
@@ -123,7 +123,7 @@ export function MapHotspots() {
         <button
           type="button"
           className="filter-chip"
-          onClick={() => protoToast("District/station drilldown needs a live query backend")}
+          onClick={() => protoToast("District drilldown isn’t in this build yet")}
         >
           <span className="filter-chip__label">Level</span>
           <span className="filter-chip__value">
@@ -199,7 +199,7 @@ export function MapHotspots() {
                     <button
                       type="button"
                       className="insight__cta"
-                      onClick={() => protoToast("Zone drilldown needs a live query backend")}
+                      onClick={() => protoToast("Zone drilldown isn’t in this build yet")}
                     >
                       View Zone Details
                       <Icon name="arrow-right" size={16} strokeWidth={2} />

@@ -84,7 +84,7 @@ export function Sidebar() {
         <button
           type="button"
           className="sidebar__scope-change"
-          onClick={() => protoToast("Scope switching needs role-scoped auth (Catalyst)")}
+          onClick={() => protoToast("Role-scoped sign-in isn’t enabled in this preview")}
         >
           Change Scope
           <Icon name="chevron-right" size={13} strokeWidth={2} />

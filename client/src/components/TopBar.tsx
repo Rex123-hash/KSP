@@ -32,7 +32,7 @@ export function TopBar() {
                 <button
                   type="button"
                   className="topbar__crumb"
-                  onClick={() => protoToast(`Scoping to ${node} needs role-scoped auth`)}
+                  onClick={() => protoToast(`Role-scoped sign-in isn’t enabled in this preview`)}
                 >
                   {node}
                 </button>
@@ -65,7 +65,7 @@ export function TopBar() {
         <button
           type="button"
           className="topbar__user"
-          onClick={() => protoToast("Account menu needs Catalyst Authentication")}
+          onClick={() => protoToast("Sign-in isn’t enabled in this preview")}
         >
           <span className="topbar__user-text">
             <span className="topbar__user-name">{officer.name}</span>

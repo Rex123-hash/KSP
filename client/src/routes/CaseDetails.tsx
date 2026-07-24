@@ -146,7 +146,7 @@ export function CaseDetails() {
                 <button
                   type="button"
                   className="cd-action"
-                  onClick={() => protoToast("Adding notes needs a live write backend")}
+                  onClick={() => protoToast("Read-only deployment — notes aren’t saved")}
                 >
                   <Icon name="file-text" size={16} /> Add Note
                 </button>
@@ -160,14 +160,14 @@ export function CaseDetails() {
                 <button
                   type="button"
                   className="cd-action"
-                  onClick={() => protoToast("Status updates need a live write backend")}
+                  onClick={() => protoToast("Read-only deployment — status can’t be changed")}
                 >
                   <Icon name="file-check" size={16} /> Update Status
                 </button>
                 <button
                   type="button"
                   className="cd-action is-danger"
-                  onClick={() => protoToast("Closing a case needs a live write backend")}
+                  onClick={() => protoToast("Read-only deployment — cases can’t be closed")}
                 >
                   <Icon name="lock" size={16} /> Close Case
                 </button>

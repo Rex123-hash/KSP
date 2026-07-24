@@ -1,12 +1,12 @@
+import { useState } from "react";
 import { Icon, type IconName } from "../components/Icon";
 import { Panel } from "../components/Panel";
 import { Sparkline } from "../components/Sparkline";
 import { LineChart } from "../components/LineChart";
 import { Donut } from "../components/Donut";
 import { PageState } from "../components/PageState";
-import { protoToast } from "../components/Toast";
+import { DateRange } from "../components/DateRange";
 import { useApi } from "../api";
-import { useMeta } from "../meta";
 import type { Kpi } from "../data/mock";
 import type { CrimeHeadSlice } from "../data/mapMock";
 import "./TrendsAlerts.css";
@@ -39,8 +39,10 @@ type TrendsData = {
 };
 
 export function TrendsAlerts() {
-  const state = useApi<TrendsData>("/trends");
-  const { dateRange } = useMeta();
+  const [days, setDays] = useState(60);
+  const [showAllTrending, setShowAllTrending] = useState(false);
+  const [showAllAlerts, setShowAllAlerts] = useState(false);
+  const state = useApi<TrendsData>(`/trends?days=${days}`);
 
   return (
     <>
@@ -50,19 +52,7 @@ export function TrendsAlerts() {
           <p className="page-subtitle">Monitor crime trends and detect unusual patterns</p>
         </div>
         <div className="page-controls">
-          <button type="button" className="page-control">
-            <Icon name="calendar" size={16} />
-            <span>{dateRange}</span>
-            <Icon name="chevron-down" size={14} strokeWidth={2} />
-          </button>
-          <button
-            type="button"
-            className="page-control ta-primary"
-            onClick={() => protoToast("Custom range needs a live query backend")}
-          >
-            <Icon name="calendar" size={16} />
-            <span>Custom Range</span>
-          </button>
+          <DateRange days={days} onChange={setDays} />
         </div>
       </div>
 
@@ -106,7 +96,12 @@ export function TrendsAlerts() {
             </div>
 
             <div className="ta-bottom">
-              <Panel title="Trending Crimes" action={{ label: "View All Trending Crimes" }} onAction={() => protoToast("Full trending-crime drilldown needs a live query backend")} bleed>
+              <Panel
+                title="Trending Crimes"
+                action={{ label: showAllTrending ? "Show Less" : `View All (${data.trending.length})` }}
+                onAction={() => setShowAllTrending((v) => !v)}
+                bleed
+              >
                 <div className="ta-trending__scroll">
                   <table className="ta-trending">
                     <thead>
@@ -118,7 +113,7 @@ export function TrendsAlerts() {
                       </tr>
                     </thead>
                     <tbody>
-                      {data.trending.map((c) => (
+                      {(showAllTrending ? data.trending : data.trending.slice(0, 5)).map((c) => (
                         <tr key={c.crimeHead}>
                           <td className="ta-trending__name">{c.crimeHead}</td>
                           <td className="ta-trending__spark">
@@ -143,9 +138,14 @@ export function TrendsAlerts() {
                 </div>
               </Panel>
 
-              <Panel title="Alert Summary" action={{ label: "View All Alerts" }} onAction={() => protoToast("Full alert history needs a live query backend")} bleed>
+              <Panel
+                title="Alert Summary"
+                action={{ label: showAllAlerts ? "Show Less" : `View All (${data.alerts.length})` }}
+                onAction={() => setShowAllAlerts((v) => !v)}
+                bleed
+              >
                 <ul className="ta-alerts">
-                  {data.alerts.map((a) => (
+                  {(showAllAlerts ? data.alerts : data.alerts.slice(0, 4)).map((a) => (
                     <li key={a.id} className={`ta-alerts__row is-${a.severity}`}>
                       <span className="ta-alerts__icon">
                         <Icon name="bell" size={15} />

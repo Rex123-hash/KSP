@@ -1,12 +1,12 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Icon, type IconName } from "../components/Icon";
 import { Panel } from "../components/Panel";
 import { StatTile } from "../components/StatTile";
 import { HotspotMap } from "../components/HotspotMap";
 import { PageState } from "../components/PageState";
-import { protoToast } from "../components/Toast";
+import { DateRange } from "../components/DateRange";
 import { useApi } from "../api";
-import { useMeta } from "../meta";
 import type { Kpi } from "../data/mock";
 import "./CommandView.css";
 
@@ -43,8 +43,8 @@ type CommandData = {
 };
 
 export function CommandView() {
-  const state = useApi<CommandData>("/command");
-  const { dateRange } = useMeta();
+  const [days, setDays] = useState(60);
+  const state = useApi<CommandData>(`/command?days=${days}`);
   const navigate = useNavigate();
 
   return (
@@ -58,19 +58,11 @@ export function CommandView() {
         </div>
 
         <div className="cmd__controls">
+          <DateRange days={days} onChange={setDays} />
           <button
             type="button"
             className="cmd__control"
-            onClick={() => protoToast("Date-range selection needs a live query backend")}
-          >
-            <Icon name="calendar" size={16} />
-            <span>{dateRange}</span>
-            <Icon name="chevron-down" size={14} strokeWidth={2} />
-          </button>
-          <button
-            type="button"
-            className="cmd__control"
-            onClick={() => protoToast("Filters need a live query backend")}
+            onClick={() => navigate("/map")}
           >
             <Icon name="filter" size={16} />
             <span>Filters</span>

@@ -39,19 +39,69 @@ app.get("/api/meta", (_req, res) => {
   res.json({ officer: OFFICER, dateRange: DATE_RANGE });
 });
 
-// ---- KPIs -------------------------------------------------------------------
-function kpis() {
-  return all("SELECT * FROM KpiSnapshot").map((k) => ({
-    id: k.id,
-    label: k.label,
-    value: k.value,
-    delta: k.delta,
-    deltaDirection: k.deltaDirection,
-    deltaSentiment: k.deltaSentiment,
-    spark: JSON.parse(k.spark),
-  }));
+// ---- KPIs (computed live over a selectable window) --------------------------
+function daysAgo(n) {
+  const d = new Date(span.b.replace(" ", "T"));
+  d.setDate(d.getDate() - n);
+  return d.toISOString().slice(0, 10);
 }
-app.get("/api/kpis", (_req, res) => res.json(kpis()));
+function rangeLabel(days) {
+  const start = new Date(span.b.replace(" ", "T"));
+  start.setDate(start.getDate() - days);
+  return `${fmt(start)} – ${fmt(span.b)}`;
+}
+
+function computeKpis(days) {
+  const curStart = daysAgo(days);
+  const prevStart = daysAgo(days * 2);
+  const rows = all(
+    `SELECT cm.CrimeRegisteredDate reg, cm.IncidentFromDate inc, cs.cstype
+     FROM CaseMaster cm LEFT JOIN ChargesheetDetails cs ON cs.CaseMasterID = cm.CaseMasterID
+     WHERE cm.CrimeRegisteredDate >= ?`, prevStart);
+  const cur = rows.filter((r) => r.reg >= curStart);
+  const prev = rows.filter((r) => r.reg < curStart);
+
+  const clr = (a) => {
+    const disp = a.filter((r) => r.cstype);
+    const A = a.filter((r) => r.cstype === "A").length;
+    return disp.length ? (A / disp.length) * 100 : 0;
+  };
+  const und = (a) => a.filter((r) => r.cstype === "C").length;
+  const delay = (a) => {
+    const ds = a.map((r) => {
+      try { return (new Date(r.reg.replace(" ", "T")) - new Date(r.inc.replace(" ", "T"))) / 86400000; }
+      catch { return null; }
+    }).filter((x) => x != null && x >= 0);
+    return ds.length ? ds.reduce((s, x) => s + x, 0) / ds.length : 0;
+  };
+  const weeks = Math.max(4, Math.min(9, Math.ceil(days / 7)));
+  const spark = new Array(weeks).fill(0);
+  const end = new Date(span.b.replace(" ", "T"));
+  for (const r of cur) {
+    const wk = Math.floor((end - new Date(r.reg.replace(" ", "T"))) / (7 * 86400000));
+    if (wk >= 0 && wk < weeks) spark[weeks - 1 - wk]++;
+  }
+  const pct = (c, p) => (p ? ((c - p) / p) * 100 : 0);
+  const z = zones();
+  const activeAlerts = z.filter((x) => x.riskLevel !== "Low").length;
+  const highZones = z.filter((x) => x.riskLevel === "High").length;
+
+  const dTot = pct(cur.length, prev.length);
+  const dClr = clr(cur) - clr(prev);
+  const dUnd = pct(und(cur), und(prev));
+  const dDelay = delay(cur) - delay(prev);
+
+  return [
+    { id: "total-cases", label: "Total Cases", value: cur.length.toLocaleString("en-IN"), delta: `${Math.abs(dTot).toFixed(1)}%`, deltaDirection: dTot >= 0 ? "up" : "down", deltaSentiment: "good", spark },
+    { id: "clearance-rate", label: "Clearance Rate", value: `${clr(cur).toFixed(1)}%`, delta: `${Math.abs(dClr).toFixed(1)}%`, deltaDirection: dClr >= 0 ? "up" : "down", deltaSentiment: "good", spark },
+    { id: "cases-undetected", label: "Cases Undetected", value: und(cur).toLocaleString("en-IN"), delta: `${Math.abs(dUnd).toFixed(1)}%`, deltaDirection: dUnd <= 0 ? "down" : "up", deltaSentiment: dUnd <= 0 ? "good" : "bad", spark },
+    { id: "reporting-delay", label: "Avg. Reporting Delay", value: `${delay(cur).toFixed(1)} days`, delta: `${Math.abs(dDelay).toFixed(1)}`, deltaDirection: dDelay <= 0 ? "down" : "up", deltaSentiment: dDelay <= 0 ? "good" : "bad", spark },
+    { id: "active-alerts", label: "Active Alerts", value: String(activeAlerts), delta: String(highZones), deltaDirection: "up", deltaSentiment: "bad", spark },
+  ];
+}
+const reqDays = (req) => Math.max(7, Math.min(365, parseInt(req.query.days) || 60));
+function kpis(days = 60) { return computeKpis(days); }
+app.get("/api/kpis", (req, res) => res.json(kpis(reqDays(req))));
 
 // ---- Crime-head shares ------------------------------------------------------
 const TONES = [
@@ -107,7 +157,8 @@ function alerts() {
 }
 
 // ---- Command view -----------------------------------------------------------
-app.get("/api/command", (_req, res) => {
+app.get("/api/command", (req, res) => {
+  const days = reqDays(req);
   const recent = all(`
     SELECT cm.CaseNo, u.UnitName station, csh.CrimeHeadName crime,
            cm.CrimeRegisteredDate reg, cm.CaseStatusID st
@@ -121,7 +172,8 @@ app.get("/api/command", (_req, res) => {
   const chargesheeted = one("SELECT COUNT(*) c FROM ChargesheetDetails WHERE cstype='A'").c;
 
   res.json({
-    kpis: kpis(),
+    dateRange: rangeLabel(days),
+    kpis: kpis(days),
     alerts: alerts(),
     quickSummary: [
       { id: "s1", label: "Most Reported Crime", value: topHead.label, sub: `${topHead.count.toLocaleString("en-IN")} Cases`, icon: "tag" },
@@ -160,68 +212,75 @@ app.get("/api/map", (_req, res) => {
 });
 
 // ---- Trends -----------------------------------------------------------------
-app.get("/api/trends", (_req, res) => {
+app.get("/api/trends", (req, res) => {
+  const days = reqDays(req);
   const tp = all("SELECT bucket, label, current, previous FROM TrendPoint ORDER BY bucket");
-  const trendingRaw = all(`
-    SELECT csh.CrimeHeadName name, COUNT(*) c
-    FROM CaseMaster cm JOIN CrimeSubHead csh ON csh.CrimeSubHeadID = cm.CrimeMinorHeadID
-    WHERE cm.CrimeRegisteredDate >= date(?, '-45 days')
-    GROUP BY csh.CrimeSubHeadID ORDER BY c DESC LIMIT 5`, span.b);
 
-  // Increasing / decreasing crime heads: recent 60d vs prior 60d, per sub-head.
-  const recent = all(`SELECT CrimeMinorHeadID h, COUNT(*) c FROM CaseMaster
-    WHERE CrimeRegisteredDate >= date(?, '-60 days') GROUP BY h`, span.b);
+  // Per-sub-head: recent window vs prior window -> direction, change %, count.
+  const recent = all(`SELECT cm.CrimeMinorHeadID h, csh.CrimeHeadName name, COUNT(*) c
+    FROM CaseMaster cm JOIN CrimeSubHead csh ON csh.CrimeSubHeadID = cm.CrimeMinorHeadID
+    WHERE cm.CrimeRegisteredDate >= ? GROUP BY cm.CrimeMinorHeadID`, daysAgo(days));
   const prior = all(`SELECT CrimeMinorHeadID h, COUNT(*) c FROM CaseMaster
-    WHERE CrimeRegisteredDate >= date(?, '-120 days') AND CrimeRegisteredDate < date(?, '-60 days')
-    GROUP BY h`, span.b, span.b);
+    WHERE CrimeRegisteredDate >= ? AND CrimeRegisteredDate < ? GROUP BY h`,
+    daysAgo(days * 2), daysAgo(days));
   const priorMap = Object.fromEntries(prior.map((r) => [r.h, r.c]));
-  let up = 0, down = 0;
-  for (const r of recent) {
+
+  const trendingAll = recent.map((r) => {
     const p = priorMap[r.h] || 0;
-    if (r.c > p * 1.05) up++;
-    else if (r.c < p * 0.95) down++;
+    const change = p ? ((r.c - p) / p) * 100 : 100;
+    return { h: r.h, crimeHead: r.name, cases: r.c, changeNum: change };
+  }).sort((a, b) => Math.abs(b.changeNum) - Math.abs(a.changeNum));
+
+  let up = 0, down = 0;
+  for (const t of trendingAll) {
+    if (t.changeNum > 5) up++;
+    else if (t.changeNum < -5) down++;
   }
-  const totalWindow = one(`SELECT COUNT(*) c FROM CaseMaster WHERE CrimeRegisteredDate >= date(?, '-60 days')`, span.b).c;
-  const sparkAll = kpis().find((k) => k.id === "total-cases").spark;
-  const activeAlerts = zones().filter((z) => z.riskLevel !== "Low").length;
-  const highZones = zones().filter((z) => z.riskLevel === "High").length;
-  const medZones = zones().filter((z) => z.riskLevel === "Medium").length;
+  const totalWindow = recent.reduce((s, r) => s + r.c, 0);
+  const sparkAll = kpis(days).find((k) => k.id === "total-cases").spark;
+  const z = zones();
+  const nonLow = z.filter((x) => x.riskLevel !== "Low");
+  const highZones = z.filter((x) => x.riskLevel === "High").length;
+  const medZones = z.filter((x) => x.riskLevel === "Medium").length;
 
   const trendKpis = [
-    { id: "total", label: "Total Cases", value: totalWindow.toLocaleString("en-IN"), delta: "18.7%", deltaDirection: "up", deltaSentiment: "good", icon: "file-text", spark: sparkAll },
+    { id: "total", label: "Total Cases", value: totalWindow.toLocaleString("en-IN"), delta: `${up + down}`, deltaDirection: "up", deltaSentiment: "good", icon: "file-text", spark: sparkAll },
     { id: "increasing", label: "Increasing Crimes", value: String(up), delta: `${up}`, deltaDirection: "up", deltaSentiment: "bad", icon: "arrow-up", spark: sparkAll },
     { id: "decreasing", label: "Decreasing Crimes", value: String(down), delta: `${down}`, deltaDirection: "down", deltaSentiment: "good", icon: "arrow-down", spark: sparkAll },
-    { id: "alerts", label: "Active Alerts", value: String(activeAlerts), icon: "bell",
+    { id: "alerts", label: "Active Alerts", value: String(nonLow.length), icon: "bell",
       breakdown: [
         { label: `${highZones} High`, tone: "var(--status-critical)" },
         { label: `${medZones} Medium`, tone: "var(--status-warning)" },
-        { label: `${Math.max(0, activeAlerts - highZones - medZones)} Low`, tone: "var(--status-neutral)" },
+        { label: `${Math.max(0, nonLow.length - highZones - medZones)} Low`, tone: "var(--status-neutral)" },
       ] },
   ];
-  const totalCasesLabel = one("SELECT COUNT(*) c FROM CaseMaster").c.toLocaleString("en-IN");
+
+  const sevOf = (lvl) => (lvl === "High" ? "high" : lvl === "Medium" ? "medium" : "low");
 
   res.json({
     kpis: trendKpis,
-    totalCases: totalCasesLabel,
+    totalCases: one("SELECT COUNT(*) c FROM CaseMaster").c.toLocaleString("en-IN"),
     axisLabels: tp.filter((_, i) => i % 3 === 0).map((p) => p.label),
     current: tp.map((p) => p.current),
     previous: tp.map((p) => p.previous),
     crimeHeads: crimeHeads(),
-    trending: trendingRaw.map((t, i) => ({
-      crimeHead: t.name,
-      direction: i < 3 ? "up" : "down",
-      change: `${8 + (5 - i) * 6}%`,
-      cases: t.c.toLocaleString("en-IN"),
-      spark: [10, 13, 12, 16, 15, 19, 22].map((v) => (i < 3 ? v : 34 - v)),
+    // Full list — the frontend shows a few and expands on "View All".
+    trending: trendingAll.map((t) => ({
+      crimeHead: t.crimeHead,
+      direction: t.changeNum >= 0 ? "up" : "down",
+      change: `${Math.abs(Math.round(t.changeNum))}%`,
+      cases: t.cases.toLocaleString("en-IN"),
+      spark: (t.changeNum >= 0 ? [10, 13, 12, 16, 15, 19, 22] : [22, 19, 20, 16, 17, 13, 11]),
     })),
-    alerts: alerts().map((a) => ({
-      id: a.id,
-      severity: a.severity === "critical" ? "high" : a.severity === "serious" ? "medium" : "low",
-      title: a.title,
-      where: a.where,
-      when: a.when,
+    // Every at-risk zone becomes an alert.
+    alerts: nonLow.map((zn, i) => ({
+      id: `al-${i}`,
+      severity: sevOf(zn.riskLevel),
+      title: `${zn.riskLevel} risk in ${zn.zone.replace(" PS", "")}`,
+      where: zn.zone,
+      when: "Next 7 days",
     })),
-    riskZones: zones().slice(0, 5).map((z) => ({ zone: z.zone.replace(" PS", " Zone"), level: z.riskLevel, pct: z.riskPct })),
+    riskZones: z.map((zn) => ({ zone: zn.zone.replace(" PS", " Zone"), level: zn.riskLevel, pct: zn.riskPct })),
   });
 });
 
