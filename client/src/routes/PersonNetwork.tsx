@@ -1,11 +1,15 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Icon } from "../components/Icon";
 import { Panel } from "../components/Panel";
 import { Avatar } from "../components/Avatar";
 import { NetworkGraph, type NetworkNode } from "../components/NetworkGraph";
 import { PageState } from "../components/PageState";
+import { protoToast } from "../components/Toast";
 import { useApi } from "../api";
 import "./PersonNetwork.css";
+
+type PersonListItem = { id: number; name: string; cases: number; risk: number };
 
 function tierOf(score: number): "high" | "medium" | "low" {
   if (score >= 75) return "high";
@@ -26,7 +30,7 @@ type Person = {
   mergedFrom: string[];
   riskScore: number;
 };
-type Connection = { name: string; confidence: number; relation: string };
+type Connection = { id?: string; name: string; confidence: number; relation: string };
 type LinkedCase = {
   firNo: string;
   crimeHead: string;
@@ -51,7 +55,27 @@ type PersonData = {
 
 export function PersonNetwork() {
   const [view, setView] = useState<"graph" | "list">("graph");
-  const state = useApi<PersonData>("/persons/featured");
+  const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [query, setQuery] = useState("");
+  const navigate = useNavigate();
+
+  const state = useApi<PersonData>(
+    selectedId == null ? "/persons/featured" : `/persons/${selectedId}`
+  );
+  const listState = useApi<PersonListItem[]>("/persons/list");
+
+  const results = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q || !listState.data) return [];
+    return listState.data
+      .filter((p) => p.name.toLowerCase().includes(q) || String(p.id) === q)
+      .slice(0, 6);
+  }, [query, listState.data]);
+
+  const goTo = (id: number) => {
+    setSelectedId(id);
+    setQuery("");
+  };
 
   return (
     <>
@@ -63,11 +87,34 @@ export function PersonNetwork() {
           </p>
         </div>
         <div className="page-controls">
-          <label className="pn-search">
-            <Icon name="user" size={16} />
-            <input placeholder="Search by name, alias or ID" />
-          </label>
-          <button type="button" className="page-control">
+          <div className="pn-search-wrap">
+            <label className="pn-search">
+              <Icon name="user" size={16} />
+              <input
+                placeholder="Search by name or ID"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+              />
+            </label>
+            {results.length > 0 && (
+              <ul className="pn-search-results">
+                {results.map((r) => (
+                  <li key={r.id}>
+                    <button type="button" onClick={() => goTo(r.id)}>
+                      <Avatar name={r.name} size={26} />
+                      <span className="pn-search-results__name">{r.name}</span>
+                      <span className="pn-search-results__meta">{r.cases} cases</span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+          <button
+            type="button"
+            className="page-control"
+            onClick={() => protoToast("Advanced filters need a live query backend")}
+          >
             <Icon name="filter" size={16} />
             <span>Advanced Filters</span>
           </button>
@@ -104,15 +151,17 @@ export function PersonNetwork() {
                     focusName={data.person.name}
                     focusConfidence={data.person.confidence}
                     nodes={data.network}
+                    onNodeClick={goTo}
                   />
                 ) : (
-                  <ConnectionList connections={data.connections} />
+                  <ConnectionList connections={data.connections} onOpen={goTo} />
                 )}
               </section>
 
               <Panel
                 title={`Linked Cases (${data.linkedCases.length})`}
                 action={{ label: "View All Cases" }}
+                onAction={() => navigate("/cases")}
                 bleed
               >
                 <div className="pn-cases__scroll">
@@ -207,23 +256,34 @@ export function PersonNetwork() {
                 </div>
               </Panel>
 
-              <Panel title="Connected To" action={{ label: "View All Connections" }}>
+              <Panel
+                title="Connected To"
+                action={{ label: "View All Connections" }}
+                onAction={() => setView("list")}
+              >
                 <ul className="connlist">
-                  {data.connections.map((c) => (
-                    <li key={c.name} className="connlist__row">
-                      <Avatar name={c.name} size={34} />
-                      <div className="connlist__id">
-                        <span className="connlist__name">{c.name}</span>
-                        <span className="connlist__conf">Confidence: {c.confidence}%</span>
-                      </div>
-                      <span className={`connlist__tag is-${tierOf(c.confidence)}`}>
-                        {c.relation}
-                      </span>
-                      <button type="button" className="connlist__eye" aria-label="View">
-                        <Icon name="eye" size={16} />
-                      </button>
-                    </li>
-                  ))}
+                  {data.connections.map((c) => {
+                    const pid = c.id ? Number(c.id.replace(/^n/, "")) : null;
+                    return (
+                      <li
+                        key={c.name}
+                        className={`connlist__row${pid ? " is-clickable" : ""}`}
+                        onClick={pid ? () => goTo(pid) : undefined}
+                      >
+                        <Avatar name={c.name} size={34} />
+                        <div className="connlist__id">
+                          <span className="connlist__name">{c.name}</span>
+                          <span className="connlist__conf">Confidence: {c.confidence}%</span>
+                        </div>
+                        <span className={`connlist__tag is-${tierOf(c.confidence)}`}>
+                          {c.relation}
+                        </span>
+                        <button type="button" className="connlist__eye" aria-label="View person">
+                          <Icon name="eye" size={16} />
+                        </button>
+                      </li>
+                    );
+                  })}
                 </ul>
               </Panel>
 
@@ -288,7 +348,13 @@ function Insight({
   );
 }
 
-function ConnectionList({ connections }: { connections: Connection[] }) {
+function ConnectionList({
+  connections,
+  onOpen,
+}: {
+  connections: Connection[];
+  onOpen: (id: number) => void;
+}) {
   return (
     <div className="pn-cases__scroll">
       <table className="pn-cases">
@@ -300,22 +366,29 @@ function ConnectionList({ connections }: { connections: Connection[] }) {
           </tr>
         </thead>
         <tbody>
-          {connections.map((c) => (
-            <tr key={c.name}>
-              <td>
-                <span className="pn-listcell">
-                  <Avatar name={c.name} size={28} />
-                  {c.name}
-                </span>
-              </td>
-              <td className="tabular">{c.confidence}%</td>
-              <td>
-                <span className={`connlist__tag is-${tierOf(c.confidence)}`}>
-                  {c.relation}
-                </span>
-              </td>
-            </tr>
-          ))}
+          {connections.map((c) => {
+            const pid = c.id ? Number(c.id.replace(/^n/, "")) : null;
+            return (
+              <tr
+                key={c.name}
+                className={pid ? "is-clickable" : undefined}
+                onClick={pid ? () => onOpen(pid) : undefined}
+              >
+                <td>
+                  <span className="pn-listcell">
+                    <Avatar name={c.name} size={28} />
+                    {c.name}
+                  </span>
+                </td>
+                <td className="tabular">{c.confidence}%</td>
+                <td>
+                  <span className={`connlist__tag is-${tierOf(c.confidence)}`}>
+                    {c.relation}
+                  </span>
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>

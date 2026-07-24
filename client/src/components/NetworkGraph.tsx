@@ -67,10 +67,13 @@ export function NetworkGraph({
   focusName,
   focusConfidence,
   nodes,
+  onNodeClick,
 }: {
   focusName: string;
   focusConfidence: number;
   nodes: NetworkNode[];
+  /** Called with the person id when a ring node is clicked. */
+  onNodeClick?: (personId: number) => void;
 }) {
   return (
     <div className="netgraph">
@@ -97,7 +100,15 @@ export function NetworkGraph({
 
         {/* Ring nodes */}
         {nodes.map((n) => (
-          <Node key={n.id} node={n} />
+          <Node
+            key={n.id}
+            node={n}
+            onClick={
+              onNodeClick && n.kind !== "unknown"
+                ? () => onNodeClick(Number(String(n.id).replace(/^n/, "")))
+                : undefined
+            }
+          />
         ))}
 
         {/* Centre node */}
@@ -122,13 +133,17 @@ export function NetworkGraph({
   );
 }
 
-function Node({ node }: { node: NetworkNode }) {
+function Node({ node, onClick }: { node: NetworkNode; onClick?: () => void }) {
   const p = pos(node.angle);
   const known = node.kind === "known";
   const unknown = node.kind === "unknown";
 
   return (
-    <g>
+    <g
+      onClick={onClick}
+      style={onClick ? { cursor: "pointer" } : undefined}
+      className={onClick ? "netgraph__node is-clickable" : "netgraph__node"}
+    >
       {unknown ? (
         <>
           <circle cx={p.x} cy={p.y} r={NODE_R} fill="var(--surface-sunken)"

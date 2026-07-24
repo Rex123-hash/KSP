@@ -1,13 +1,30 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Icon } from "../components/Icon";
 import { Panel } from "../components/Panel";
 import { HotspotMap } from "../components/HotspotMap";
 import { Donut } from "../components/Donut";
 import { PageState } from "../components/PageState";
+import { protoToast } from "../components/Toast";
 import { useApi } from "../api";
 import { useMeta } from "../meta";
-import { mapFilters, type CrimeHeadSlice } from "../data/mapMock";
+import { type CrimeHeadSlice } from "../data/mapMock";
 import "./MapHotspots.css";
+
+// Crime-head groups (CrimeMajorHeadID) — the ids the hotspot points carry.
+const HEADS = [
+  { id: null, label: "All Crime Heads" },
+  { id: 1, label: "Property" },
+  { id: 2, label: "Against Body" },
+  { id: 3, label: "Against Women" },
+  { id: 4, label: "Economic" },
+  { id: 5, label: "Other IPC/BNS" },
+];
+
+function hourLabel(h: number) {
+  const period = h < 12 ? "AM" : "PM";
+  const h12 = h % 12 === 0 ? 12 : h % 12;
+  return `${h12} ${period}`;
+}
 
 type MapData = {
   insight: {
@@ -22,19 +39,28 @@ type MapData = {
   totalCases: string;
 };
 
-const FILTER_CHIPS: { key: string; label: string; value: string; icon?: never }[] = [
-  { key: "crimeHead", label: "Crime Head", value: mapFilters.crimeHead },
-  { key: "timeOfDay", label: "Time / Day", value: mapFilters.timeOfDay },
-  { key: "viewBy", label: "View By", value: mapFilters.viewBy },
-  { key: "level", label: "Level", value: mapFilters.level },
-];
-
-const HOURS = ["12 AM", "4 AM", "8 AM", "12 PM", "4 PM", "8 PM", "12 AM"];
+const HOURS = ["12 AM", "4 AM", "8 AM", "12 PM", "4 PM", "8 PM", "11 PM"];
 
 export function MapHotspots() {
-  const [hour, setHour] = useState(83); // slider 0–100, ~8 PM
+  const [hour, setHour] = useState<number | null>(null); // null = all day
+  const [headIdx, setHeadIdx] = useState(0); // index into HEADS
+  const [playing, setPlaying] = useState(false);
+  const playRef = useRef<number | null>(null);
   const state = useApi<MapData>("/map");
   const { dateRange } = useMeta();
+
+  // Play animation: cycle the hour 0→23 while playing.
+  useEffect(() => {
+    if (!playing) return;
+    playRef.current = window.setInterval(() => {
+      setHour((h) => ((h == null ? -1 : h) + 1) % 24);
+    }, 550);
+    return () => {
+      if (playRef.current) window.clearInterval(playRef.current);
+    };
+  }, [playing]);
+
+  const headFilter = HEADS[headIdx].id;
 
   return (
     <>
@@ -59,35 +85,75 @@ export function MapHotspots() {
       </div>
 
       <div className="filter-bar">
-        {FILTER_CHIPS.map((c) => (
-          <button key={c.key} type="button" className="filter-chip">
-            <span className="filter-chip__label">{c.label}</span>
-            <span className="filter-chip__value">
-              {c.key === "viewBy" && (
-                <Icon name="map-pin" size={14} />
-              )}
-              {c.value}
-              <Icon name="chevron-down" size={14} strokeWidth={2} />
-            </span>
-          </button>
-        ))}
+        {/* Crime Head — clicking cycles the head filter and drives the map. */}
+        <button
+          type="button"
+          className="filter-chip"
+          onClick={() => setHeadIdx((i) => (i + 1) % HEADS.length)}
+        >
+          <span className="filter-chip__label">Crime Head</span>
+          <span className="filter-chip__value">
+            {HEADS[headIdx].label}
+            <Icon name="chevron-down" size={14} strokeWidth={2} />
+          </span>
+        </button>
+
+        {/* Time / Day — reflects the slider; click resets to all day. */}
+        <button type="button" className="filter-chip" onClick={() => setHour(null)}>
+          <span className="filter-chip__label">Time / Day</span>
+          <span className="filter-chip__value">
+            {hour == null ? "All Day" : hourLabel(hour)}
+            <Icon name="chevron-down" size={14} strokeWidth={2} />
+          </span>
+        </button>
+
+        <button
+          type="button"
+          className="filter-chip"
+          onClick={() => protoToast("Cluster view needs a live query backend")}
+        >
+          <span className="filter-chip__label">View By</span>
+          <span className="filter-chip__value">
+            <Icon name="map-pin" size={14} />
+            Heatmap
+            <Icon name="chevron-down" size={14} strokeWidth={2} />
+          </span>
+        </button>
+
+        <button
+          type="button"
+          className="filter-chip"
+          onClick={() => protoToast("District/station drilldown needs a live query backend")}
+        >
+          <span className="filter-chip__label">Level</span>
+          <span className="filter-chip__value">
+            Zone
+            <Icon name="chevron-down" size={14} strokeWidth={2} />
+          </span>
+        </button>
       </div>
 
       <div className="map-grid">
         <div className="map-grid__main">
           <div className="map-panel">
-            <HotspotMap height={512} showFilterChip={false} />
+            <HotspotMap height={512} showFilterChip={false} filterHour={hour} filterHead={headFilter} />
           </div>
 
-          <Panel title="Time Filter" note="(heatmap)">
+          <Panel
+            title="Time Filter"
+            note={hour == null ? "· all day" : `· ${hourLabel(hour)}`}
+          >
             <div className="time-filter">
               <div className="time-filter__track">
                 <input
                   type="range"
                   min={0}
-                  max={100}
-                  value={hour}
-                  onChange={(e) => setHour(Number(e.target.value))}
+                  max={23}
+                  value={hour ?? 0}
+                  onChange={(e) => {
+                    setPlaying(false);
+                    setHour(Number(e.target.value));
+                  }}
                   aria-label="Time of day"
                 />
                 <div className="time-filter__ticks">
@@ -96,9 +162,13 @@ export function MapHotspots() {
                   ))}
                 </div>
               </div>
-              <button type="button" className="time-filter__play">
-                <Icon name="chevron-right" size={15} strokeWidth={2.4} />
-                Play Animation
+              <button
+                type="button"
+                className="time-filter__play"
+                onClick={() => setPlaying((p) => !p)}
+              >
+                <Icon name={playing ? "minus" : "chevron-right"} size={15} strokeWidth={2.4} />
+                {playing ? "Pause" : "Play Animation"}
               </button>
             </div>
           </Panel>
@@ -126,7 +196,11 @@ export function MapHotspots() {
                       <InsightRow icon="file-text" label="Total Cases" value={data.insight.totalCases} />
                     </dl>
 
-                    <button type="button" className="insight__cta">
+                    <button
+                      type="button"
+                      className="insight__cta"
+                      onClick={() => protoToast("Zone drilldown needs a live query backend")}
+                    >
                       View Zone Details
                       <Icon name="arrow-right" size={16} strokeWidth={2} />
                     </button>

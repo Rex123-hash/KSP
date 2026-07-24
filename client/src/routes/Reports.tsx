@@ -4,6 +4,7 @@ import { StatTile } from "../components/StatTile";
 import { Donut } from "../components/Donut";
 import { MultiLineChart } from "../components/MultiLineChart";
 import { PageState } from "../components/PageState";
+import { protoToast, toast } from "../components/Toast";
 import { useApi, downloadUrl } from "../api";
 import { useMeta } from "../meta";
 import type { Kpi } from "../data/mock";
@@ -47,7 +48,7 @@ export function Reports() {
             <span>{dateRange}</span>
             <Icon name="chevron-down" size={14} strokeWidth={2} />
           </button>
-          <a className="page-control ta-primary" href={downloadUrl("summary")} download>
+          <a className="page-control ta-primary" href={downloadUrl("summary")} download onClick={() => toast("Summary report exported")}>
             <Icon name="arrow-down" size={16} />
             <span>Export Report</span>
           </a>
@@ -66,7 +67,7 @@ export function Reports() {
               </div>
 
               <div className="rp-mid">
-                <Panel title="Cases Over Time" action={{ label: "View Full Report" }}>
+                <Panel title="Cases Over Time" action={{ label: "View Full Report" }} onAction={() => protoToast("Full report view needs a live query backend")}>
                   <div className="rp-legend">
                     {data.series.map((s) => (
                       <span key={s.label} className="rp-legend__item">
@@ -78,7 +79,7 @@ export function Reports() {
                   <MultiLineChart series={data.series} labels={data.axisLabels} />
                 </Panel>
 
-                <Panel title="Cases by Crime Head" action={{ label: "View Full Report" }}>
+                <Panel title="Cases by Crime Head" action={{ label: "View Full Report" }} onAction={() => protoToast("Full report view needs a live query backend")}>
                   <div className="rp-dist">
                     <Donut slices={data.crimeHeads} centerValue={data.totalCases} centerLabel="Total Cases" />
                     <ul className="crimeheads__legend">
@@ -96,7 +97,7 @@ export function Reports() {
               </div>
 
               <div className="rp-bottom">
-                <Panel title="Report Summary" action={{ label: "View All Reports" }} bleed>
+                <Panel title="Report Summary" action={{ label: "View All Reports" }} onAction={() => protoToast("Full report archive needs a live query backend")} bleed>
                   <div className="rp-reports__scroll">
                     <table className="rp-reports">
                       <thead>
@@ -139,7 +140,7 @@ export function Reports() {
                   </div>
                 </Panel>
 
-                <Panel title="Top Zones by Cases" action={{ label: "View Full Report" }}>
+                <Panel title="Top Zones by Cases" action={{ label: "View Full Report" }} onAction={() => protoToast("Full report view needs a live query backend")}>
                   <div className="rp-zones__head">
                     <span>Zone</span>
                     <span>Cases</span>

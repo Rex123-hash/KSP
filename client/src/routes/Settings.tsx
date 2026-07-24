@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Icon } from "../components/Icon";
 import { Avatar } from "../components/Avatar";
+import { toast, protoToast } from "../components/Toast";
 import {
   accessRole,
   notifications,
@@ -55,7 +56,7 @@ export function Settings() {
               <ProfileFact label="Phone" value={profile.phone} />
             </dl>
           </div>
-          <button type="button" className="st-btn st-btn--ghost">
+          <button type="button" className="st-btn st-btn--ghost" onClick={() => protoToast("Profile editing needs a live backend")}>
             <Icon name="file-check" size={15} /> Edit Profile
           </button>
         </section>
@@ -89,7 +90,7 @@ export function Settings() {
               </span>
             </li>
           </ul>
-          <button type="button" className="st-btn st-btn--ghost">
+          <button type="button" className="st-btn st-btn--ghost" onClick={() => toast("Preferences saved")}>
             <Icon name="check" size={15} /> Save Preferences
           </button>
         </section>
@@ -115,7 +116,7 @@ export function Settings() {
               </li>
             ))}
           </ul>
-          <button type="button" className="st-btn st-btn--ghost">
+          <button type="button" className="st-btn st-btn--ghost" onClick={() => toast("Notification preferences saved")}>
             <Icon name="check" size={15} /> Save Notifications
           </button>
         </section>
@@ -147,7 +148,7 @@ export function Settings() {
           <PasswordField label="Current Password" placeholder="Enter current password" />
           <PasswordField label="New Password" placeholder="Enter new password" />
           <PasswordField label="Confirm New Password" placeholder="Confirm new password" />
-          <button type="button" className="st-btn st-btn--solid">
+          <button type="button" className="st-btn st-btn--solid" onClick={() => protoToast("Password change needs Catalyst Authentication")}>
             <Icon name="lock" size={15} /> Update Password
           </button>
         </section>

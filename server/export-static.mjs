@@ -22,7 +22,7 @@ const BASE = `http://localhost:${PORT}/api`;
 const JSON_ENDPOINTS = [
   "meta", "kpis", "crime-heads", "hotspots", "zones",
   "command", "map", "trends", "resolution",
-  "persons/featured", "cases/featured", "reports",
+  "persons/featured", "persons/list", "cases/featured", "reports",
 ];
 
 // Download kinds -> download/<kind>.csv
@@ -52,6 +52,35 @@ async function main() {
     if (!res.ok) throw new Error(`download ${kind} -> ${res.status}`);
     const body = await res.text();
     await writeFile(join(OUT, "download", `${kind}.csv`), body, "utf8");
+    count++;
+  }
+
+  // Per-person files so the network graph, search, and connections are fully
+  // navigable in the static build (click any listed person -> loads their page).
+  const ids = new Set();
+  const list = await (await fetch(`${BASE}/persons/list`)).json();
+  for (const p of list) ids.add(p.id);
+  const featured = await (await fetch(`${BASE}/persons/featured`)).json();
+  ids.add(featured.person.id);
+  for (const n of featured.network) ids.add(Number(String(n.id).replace(/^n/, "")));
+
+  await mkdir(join(OUT, "persons"), { recursive: true });
+  for (const id of ids) {
+    const res = await fetch(`${BASE}/persons/${id}`);
+    if (!res.ok) continue;
+    const body = await res.text();
+    await writeFile(join(OUT, "persons", `${id}.json`), body, "utf8");
+    // Pull this person's associates into the set too (one more hop of reach).
+    try {
+      const pd = JSON.parse(body);
+      for (const n of pd.network) {
+        const nid = Number(String(n.id).replace(/^n/, ""));
+        if (!ids.has(nid)) {
+          const r2 = await fetch(`${BASE}/persons/${nid}`);
+          if (r2.ok) await writeFile(join(OUT, "persons", `${nid}.json`), await r2.text(), "utf8");
+        }
+      }
+    } catch {}
     count++;
   }
 

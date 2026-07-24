@@ -4,6 +4,7 @@ import { Sparkline } from "../components/Sparkline";
 import { LineChart } from "../components/LineChart";
 import { Donut } from "../components/Donut";
 import { PageState } from "../components/PageState";
+import { protoToast } from "../components/Toast";
 import { useApi } from "../api";
 import { useMeta } from "../meta";
 import type { Kpi } from "../data/mock";
@@ -54,7 +55,11 @@ export function TrendsAlerts() {
             <span>{dateRange}</span>
             <Icon name="chevron-down" size={14} strokeWidth={2} />
           </button>
-          <button type="button" className="page-control ta-primary">
+          <button
+            type="button"
+            className="page-control ta-primary"
+            onClick={() => protoToast("Custom range needs a live query backend")}
+          >
             <Icon name="calendar" size={16} />
             <span>Custom Range</span>
           </button>
@@ -101,7 +106,7 @@ export function TrendsAlerts() {
             </div>
 
             <div className="ta-bottom">
-              <Panel title="Trending Crimes" action={{ label: "View All Trending Crimes" }} bleed>
+              <Panel title="Trending Crimes" action={{ label: "View All Trending Crimes" }} onAction={() => protoToast("Full trending-crime drilldown needs a live query backend")} bleed>
                 <div className="ta-trending__scroll">
                   <table className="ta-trending">
                     <thead>
@@ -138,7 +143,7 @@ export function TrendsAlerts() {
                 </div>
               </Panel>
 
-              <Panel title="Alert Summary" action={{ label: "View All Alerts" }} bleed>
+              <Panel title="Alert Summary" action={{ label: "View All Alerts" }} onAction={() => protoToast("Full alert history needs a live query backend")} bleed>
                 <ul className="ta-alerts">
                   {data.alerts.map((a) => (
                     <li key={a.id} className={`ta-alerts__row is-${a.severity}`}>

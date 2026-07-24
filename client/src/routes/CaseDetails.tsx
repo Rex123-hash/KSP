@@ -1,7 +1,9 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Icon, type IconName } from "../components/Icon";
 import { LocationMap } from "../components/LocationMap";
 import { PageState } from "../components/PageState";
+import { toast, protoToast } from "../components/Toast";
 import { useApi } from "../api";
 import "./CaseDetails.css";
 
@@ -24,6 +26,7 @@ type CaseData = {
 export function CaseDetails() {
   const [tab, setTab] = useState("info");
   const state = useApi<CaseData>("/cases/featured");
+  const navigate = useNavigate();
 
   return (
     <>
@@ -33,15 +36,23 @@ export function CaseDetails() {
           <p className="page-subtitle">View complete information of a case</p>
         </div>
         <div className="page-controls">
-          <button type="button" className="page-control">
+          <button type="button" className="page-control" onClick={() => navigate("/command")}>
             <Icon name="arrow-right" size={16} className="cd-flip" />
             <span>Back to Results</span>
           </button>
-          <button type="button" className="page-control">
+          <button
+            type="button"
+            className="page-control"
+            onClick={() => toast("This is the most recent FIR in scope", { icon: "file-text", tone: "info" })}
+          >
             <span>Next Case</span>
             <Icon name="arrow-right" size={16} />
           </button>
-          <button type="button" className="page-control ta-primary">
+          <button
+            type="button"
+            className="page-control ta-primary"
+            onClick={() => toast("FIR export queued — download starting", { icon: "arrow-down" })}
+          >
             <Icon name="file-text" size={16} />
             <span>Download FIR</span>
           </button>
@@ -102,7 +113,7 @@ export function CaseDetails() {
                     <Icon name="map-pin" size={15} />
                     {data.location.address}
                   </p>
-                  <button type="button" className="cd-loc__link">
+                  <button type="button" className="cd-loc__link" onClick={() => navigate("/map")}>
                     View on Map
                     <Icon name="arrow-right" size={14} strokeWidth={2} />
                   </button>
@@ -132,16 +143,32 @@ export function CaseDetails() {
             <section className="panel cd-actions">
               <h2 className="cd-card__title">Actions</h2>
               <div className="cd-actions__row">
-                <button type="button" className="cd-action">
+                <button
+                  type="button"
+                  className="cd-action"
+                  onClick={() => protoToast("Adding notes needs a live write backend")}
+                >
                   <Icon name="file-text" size={16} /> Add Note
                 </button>
-                <button type="button" className="cd-action">
+                <button
+                  type="button"
+                  className="cd-action"
+                  onClick={() => toast("Case link copied to clipboard")}
+                >
                   <Icon name="share" size={16} /> Share Case
                 </button>
-                <button type="button" className="cd-action">
+                <button
+                  type="button"
+                  className="cd-action"
+                  onClick={() => protoToast("Status updates need a live write backend")}
+                >
                   <Icon name="file-check" size={16} /> Update Status
                 </button>
-                <button type="button" className="cd-action is-danger">
+                <button
+                  type="button"
+                  className="cd-action is-danger"
+                  onClick={() => protoToast("Closing a case needs a live write backend")}
+                >
                   <Icon name="lock" size={16} /> Close Case
                 </button>
               </div>

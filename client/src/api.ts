@@ -56,10 +56,11 @@ export function useApi<T>(path: string): AsyncState<T> {
   return state;
 }
 
-// Dev: dynamic CSV from the server. Prod/static: pre-exported CSV under <base>.
+// Live backend + dev serve the dynamic CSV endpoint; the static snapshot serves
+// pre-exported CSV files.
 export const downloadUrl = (kind: string) =>
   CATALYST_API
-    ? `${CATALYST_API.replace(/\/$/, "")}/api/download/${kind}.csv`
+    ? `${CATALYST_API.replace(/\/$/, "")}/api/report/download?kind=${kind}`
     : STATIC
       ? `${BASE}api/download/${kind}.csv`
       : `/api/report/download?kind=${kind}`;

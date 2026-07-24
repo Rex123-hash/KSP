@@ -1,4 +1,4 @@
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { HashRouter, Navigate, Route, Routes } from "react-router-dom";
 import { MetaProvider } from "./meta";
 import { AppShell } from "./components/AppShell";
 import { CommandView } from "./routes/CommandView";
@@ -13,7 +13,9 @@ import { Login } from "./routes/Login";
 
 export default function App() {
   return (
-    <BrowserRouter basename={import.meta.env.BASE_URL.replace(/\/$/, "")}>
+    // HashRouter: routes live in the URL hash, so every route and a hard refresh
+    // work on Catalyst static hosting (no server-side SPA fallback needed).
+    <HashRouter>
       <MetaProvider>
       <Routes>
         <Route path="/login" element={<Login />} />
@@ -41,6 +43,6 @@ export default function App() {
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       </MetaProvider>
-    </BrowserRouter>
+    </HashRouter>
   );
 }

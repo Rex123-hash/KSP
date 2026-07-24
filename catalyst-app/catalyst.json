@@ -1,5 +1,11 @@
 {
   "client": {
     "source": "client"
-  }
+  },
+  "appsail": [
+    {
+      "source": "appsail",
+      "name": "kspapi"
+    }
+  ]
 }

@@ -1,6 +1,7 @@
 import { NavLink } from "react-router-dom";
 import { Icon, type IconName } from "./Icon";
 import { Emblem } from "./Emblem";
+import { protoToast } from "./Toast";
 import { useMeta } from "../meta";
 import "./Sidebar.css";
 
@@ -80,7 +81,11 @@ export function Sidebar() {
         </div>
         <p className="sidebar__scope-unit">{officer.scopeLabel}</p>
         <p className="sidebar__scope-rank">{officer.rank}</p>
-        <button type="button" className="sidebar__scope-change">
+        <button
+          type="button"
+          className="sidebar__scope-change"
+          onClick={() => protoToast("Scope switching needs role-scoped auth (Catalyst)")}
+        >
           Change Scope
           <Icon name="chevron-right" size={13} strokeWidth={2} />
         </button>

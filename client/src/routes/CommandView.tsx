@@ -1,8 +1,10 @@
+import { useNavigate } from "react-router-dom";
 import { Icon, type IconName } from "../components/Icon";
 import { Panel } from "../components/Panel";
 import { StatTile } from "../components/StatTile";
 import { HotspotMap } from "../components/HotspotMap";
 import { PageState } from "../components/PageState";
+import { protoToast } from "../components/Toast";
 import { useApi } from "../api";
 import { useMeta } from "../meta";
 import type { Kpi } from "../data/mock";
@@ -43,6 +45,7 @@ type CommandData = {
 export function CommandView() {
   const state = useApi<CommandData>("/command");
   const { dateRange } = useMeta();
+  const navigate = useNavigate();
 
   return (
     <>
@@ -55,12 +58,20 @@ export function CommandView() {
         </div>
 
         <div className="cmd__controls">
-          <button type="button" className="cmd__control">
+          <button
+            type="button"
+            className="cmd__control"
+            onClick={() => protoToast("Date-range selection needs a live query backend")}
+          >
             <Icon name="calendar" size={16} />
             <span>{dateRange}</span>
             <Icon name="chevron-down" size={14} strokeWidth={2} />
           </button>
-          <button type="button" className="cmd__control">
+          <button
+            type="button"
+            className="cmd__control"
+            onClick={() => protoToast("Filters need a live query backend")}
+          >
             <Icon name="filter" size={16} />
             <span>Filters</span>
           </button>
@@ -82,6 +93,7 @@ export function CommandView() {
                   title="Crime Hotspots"
                   note="(this period)"
                   action={{ label: "View Full Map", icon: "external" }}
+                  onAction={() => navigate("/map")}
                   bleed
                 >
                   <HotspotMap height={392} />
@@ -112,16 +124,26 @@ export function CommandView() {
               </div>
 
               <div className="cmd__col">
-                <Panel title="Active Alerts" action={{ label: "View All" }} bleed>
+                <Panel
+                  title="Active Alerts"
+                  action={{ label: "View All" }}
+                  onAction={() => navigate("/trends")}
+                  bleed
+                >
                   <ul className="alerts">
                     {data.alerts.map((alert) => (
-                      <AlertRow key={alert.id} alert={alert} />
+                      <AlertRow key={alert.id} alert={alert} onClick={() => navigate("/trends")} />
                     ))}
                   </ul>
                 </Panel>
 
-                <Panel title="Recent FIRs" action={{ label: "View All" }} bleed>
-                  <FirTable rows={data.recentFirs} />
+                <Panel
+                  title="Recent FIRs"
+                  action={{ label: "View All" }}
+                  onAction={() => navigate("/cases")}
+                  bleed
+                >
+                  <FirTable rows={data.recentFirs} onRowClick={() => navigate("/cases")} />
                 </Panel>
               </div>
             </div>
@@ -139,10 +161,10 @@ export function CommandView() {
 
 /* -------------------------------------------------------------------------- */
 
-function AlertRow({ alert }: { alert: Alert }) {
+function AlertRow({ alert, onClick }: { alert: Alert; onClick?: () => void }) {
   const rising = alert.severity !== "good";
   return (
-    <li className={`alerts__row is-${alert.severity}`}>
+    <li className={`alerts__row is-${alert.severity}`} onClick={onClick}>
       <span className="alerts__icon">
         <Icon name="arrow-up" size={15} strokeWidth={2.4} />
       </span>
@@ -172,7 +194,7 @@ function AlertRow({ alert }: { alert: Alert }) {
   );
 }
 
-function FirTable({ rows }: { rows: Fir[] }) {
+function FirTable({ rows, onRowClick }: { rows: Fir[]; onRowClick?: () => void }) {
   return (
     <div className="fir-table__scroll">
       <table className="fir-table">
@@ -187,7 +209,7 @@ function FirTable({ rows }: { rows: Fir[] }) {
         </thead>
         <tbody>
           {rows.map((fir) => (
-            <tr key={fir.firNo}>
+            <tr key={fir.firNo} onClick={onRowClick} style={onRowClick ? { cursor: "pointer" } : undefined}>
               <td className="tabular fir-table__no">{fir.firNo}</td>
               <td>{fir.station}</td>
               <td>{fir.crimeHead}</td>

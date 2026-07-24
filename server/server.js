@@ -293,7 +293,7 @@ function buildPerson(rpId) {
     },
     network: nodes,
     connections: nodes.slice(0, 3).map((n) => ({
-      name: n.name, confidence: n.confidence, relation: "Associated",
+      id: n.id, name: n.name, confidence: n.confidence, relation: "Associated",
     })),
     relationSummary: { total: nodes.length, high: highs, medium: meds, low: nodes.length - highs - meds },
     insights: {
@@ -334,6 +334,17 @@ app.get("/api/persons/featured", (_req, res) => {
     if (surnames.size === 1) { chosen = c; break; }
   }
   res.json(buildPerson(chosen.id));
+});
+
+// Searchable list of notable persons (repeat offenders), for the search box.
+app.get("/api/persons/list", (_req, res) => {
+  const rows = all(`
+    SELECT ResolvedPersonID id, CanonicalName name, CaseCount cases, RiskScore risk
+    FROM ResolvedPerson
+    WHERE CaseCount >= 3
+    ORDER BY CaseCount DESC
+    LIMIT 120`);
+  res.json(rows);
 });
 
 app.get("/api/persons/:id", (req, res) => {

@@ -30,6 +30,70 @@
   border-color: var(--brand-green-500);
 }
 
+.pn-search-wrap {
+  position: relative;
+}
+
+.pn-search-results {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: 30;
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  background: var(--surface-card);
+  border: 1px solid var(--line-hairline);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+}
+
+.pn-search-results li button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  text-align: left;
+}
+
+.pn-search-results li button:hover {
+  background: var(--brand-green-050);
+}
+
+.pn-search-results__name {
+  flex: 1;
+  font-size: var(--text-small);
+  font-weight: 600;
+  color: var(--ink-primary);
+}
+
+.pn-search-results__meta {
+  font-size: 11.5px;
+  color: var(--ink-muted);
+}
+
+/* Clickable connection rows */
+.connlist__row.is-clickable,
+.pn-cases tr.is-clickable {
+  cursor: pointer;
+}
+
+.connlist__row.is-clickable:hover {
+  background: var(--brand-green-050);
+}
+
+.pn-cases tr.is-clickable:hover td {
+  background: var(--brand-green-050);
+}
+
+/* Clickable graph node hover */
+.netgraph__node.is-clickable:hover circle {
+  filter: brightness(1.08);
+}
+
 /* --- Layout --------------------------------------------------------------- */
 
 .pn-grid {

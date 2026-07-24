@@ -41,11 +41,17 @@ const HEAT_GRADIENT = {
 export function HotspotMap({
   height = 380,
   showFilterChip = true,
+  filterHour = null,
+  filterHead = null,
 }: {
   height?: number;
   /** The full Map page moves crime-head filtering into its own top bar, so the
    *  in-map chip is redundant there and gets hidden. */
   showFilterChip?: boolean;
+  /** Restrict the heat layer to incidents near this hour (±1h). null = all day. */
+  filterHour?: number | null;
+  /** Restrict to a crime-head id. null = all heads. */
+  filterHead?: number | null;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
@@ -76,11 +82,19 @@ export function HotspotMap({
     apiGet<HotspotResponse>("/hotspots").then(setData).catch(() => setData(null));
   }, []);
 
-  // Draw / update the heat layer when points arrive.
+  // Draw / update the heat layer when points arrive or filters change.
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !data) return;
-    const latlngs = data.points.map((p) => [p[0], p[1], p[2]] as [number, number, number]);
+    const hourWindow = (h: number) => {
+      if (filterHour == null) return true;
+      // circular ±1h window around the selected hour
+      const d = Math.min((h - filterHour + 24) % 24, (filterHour - h + 24) % 24);
+      return d <= 1;
+    };
+    const latlngs = data.points
+      .filter((p) => hourWindow(p[3]) && (filterHead == null || p[4] === filterHead))
+      .map((p) => [p[0], p[1], p[2]] as [number, number, number]);
     if (heatRef.current) {
       heatRef.current.setLatLngs(latlngs);
     } else {
@@ -93,8 +107,8 @@ export function HotspotMap({
         gradient: HEAT_GRADIENT,
       }).addTo(map);
     }
-    map.setView(data.center, data.zoom);
-  }, [data]);
+    if (!heatRef.current) map.setView(data.center, data.zoom);
+  }, [data, filterHour, filterHead]);
 
   return (
     <div className="hotspot-map" style={{ height }}>

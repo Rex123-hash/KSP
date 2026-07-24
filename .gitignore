@@ -52,3 +52,12 @@ functions/**/node_modules/
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# Catalyst deploy — generated/copied artifacts (source kept, build output ignored)
+catalyst-app/client/assets/
+catalyst-app/client/api/
+catalyst-app/client/index.html
+catalyst-app/client/favicon.svg
+catalyst-app/appsail/ksp.db
+catalyst-app/appsail/node_modules/
+catalyst-app/appsail/package-lock.json

@@ -1,5 +1,6 @@
 import { Icon } from "./Icon";
 import { Emblem } from "./Emblem";
+import { toast, protoToast } from "./Toast";
 import { useMeta } from "../meta";
 import "./TopBar.css";
 
@@ -28,7 +29,11 @@ export function TopBar() {
                   {node}
                 </span>
               ) : (
-                <button type="button" className="topbar__crumb">
+                <button
+                  type="button"
+                  className="topbar__crumb"
+                  onClick={() => protoToast(`Scoping to ${node} needs role-scoped auth`)}
+                >
                   {node}
                 </button>
               )}
@@ -47,6 +52,7 @@ export function TopBar() {
           type="button"
           className="topbar__icon-btn"
           aria-label={`Notifications, ${officer.notifications} unread`}
+          onClick={() => toast(`${officer.notifications} active alerts in your command`, { icon: "bell", tone: "info" })}
         >
           <Icon name="bell" size={19} />
           {officer.notifications > 0 && (
@@ -56,7 +62,11 @@ export function TopBar() {
 
         <div className="topbar__divider" role="presentation" />
 
-        <button type="button" className="topbar__user">
+        <button
+          type="button"
+          className="topbar__user"
+          onClick={() => protoToast("Account menu needs Catalyst Authentication")}
+        >
           <span className="topbar__user-text">
             <span className="topbar__user-name">{officer.name}</span>
             <span className="topbar__user-rank">{officer.rank}</span>
