@@ -29,6 +29,23 @@ Password for all three: `Ksp@Datathon2026`
 
 > The middle row is the point. An ASP **outranks** a Sub-Inspector and is still refused, because authority follows position in the command tree, not rank. See [Role-based access](#-role-based-access-is-real).
 
+### Contents
+
+- [The problem](#-the-problem)
+- [What it does](#-what-it-does) — the full feature catalogue
+  - [Spatiotemporal hotspots](#1-spatiotemporal-hotspots)
+  - [Zone drilldown](#2-zone-drilldown)
+  - [Criminal network analysis](#3-criminal-network--relationship-analysis)
+  - [Trends, alerts & risk scoring](#4-trends-alerts--risk-scoring)
+  - [Case file with real writes](#5-case-file-with-real-writes)
+  - [Audit trail](#6-audit-trail)
+  - [Reports & export](#7-reports--export)
+- [Role-based access is real](#-role-based-access-is-real)
+- [Architecture](#-architecture)
+- [The data & entity resolution](#-the-data)
+- [Stack](#-stack) · [Run locally](#-run-it-locally) · [Tests](#-tests) · [Demo](#-demo)
+- [What we did **not** build](#-what-we-did-not-build)
+
 ---
 
 ## <img src="docs/assets/icons/problem.svg" width="22" align="center"> The problem
@@ -46,15 +63,110 @@ The challenge brief describes an analytical ecosystem with four failures. Each m
 
 ## <img src="docs/assets/icons/features.svg" width="22" align="center"> What it does
 
-**Spatiotemporal hotspots.** A heatmap over 5,200 FIRs with a 24-hour scrubber and crime-head filter. Play the animation and offence clusters migrate across the city as the day advances — the visual argument for shift-based deployment. Switch the surface to counted clusters, at zone or district granularity, when you need numbers rather than a gradient.
+Seven surfaces, mapped to the challenge's framework. Each one is described by what an
+officer actually *does* with it and what the data underneath is doing — not a bullet list.
 
-**Zone drilldown.** Any zone opens to per-station intelligence: crime-head split, peak window derived from actual incident hours, investigation status mix, and recent FIRs. A heatmap says *where*; this says *what, when, and how far along*.
+### 1. Spatiotemporal hotspots
 
-**Criminal network analysis.** The schema has **no person identity** — each accused row is bound to one case. Identity across FIRs is reconstructed, then co-accused links are drawn into a navigable network.
+*Framework items 1 & 4 — advanced visualisation, pattern & trend discovery.*
 
-**Case file with real writes.** Notes, status changes and case closure persist to Catalyst Data Store, appear in the case timeline, and are recorded in an audit trail.
+A live heat surface over all **5,200 FIRs**, rendered with Leaflet on a muted CARTO
+basemap so the crime signal — not the map furniture — carries the colour.
 
-**Audit trail.** Every write **and every refused attempt**, with officer, unit, timestamp and outcome.
+- **24-hour time scrubber.** Every incident carries an hour bucket. Drag the slider, or hit
+  **Play**, and the heat re-renders for a ±1-hour window around the selected hour. The
+  clusters visibly migrate across the city as the day advances: property crime concentrates
+  in commercial belts by afternoon, the night window shifts it elsewhere. A static map
+  averages that away, and averaging is exactly what loses the deployment decision.
+- **Crime-head filter.** Restrict the surface to a single crime family (Property, Body,
+  Women, Economic, Other IPC/BNS) to see where *that* offence type concentrates.
+- **Two view modes.** *Heatmap* is a continuous density gradient; *Clusters* bins the same
+  points into counted bubbles sized by share of the busiest cell, each showing a case count
+  on hover — a gradient tells you *where* it's hot, a count tells you *how many* officers you
+  need. **Zone** granularity yields ~690 clusters statewide; **District** collapses that to 58.
+- **The heat ramp is a deliberate exception.** It uses the entrenched green→red convention
+  that police users read natively — the only multi-hue ramp in the product; everything else
+  follows a single-hue sequential scale.
+
+### 2. Zone drilldown
+
+*Framework item 1 — district-level drilldown & spatiotemporal clusters.*
+
+The heatmap raises a question it can't answer alone: *within this station, what is actually
+happening?* **View Zone Details** answers it, server-computed per station:
+
+- **Crime-head split** — the top offence types and their share of the zone.
+- **Peak window** — derived from the actual distribution of incident hours, not a guess
+  (e.g. *9 PM – 11 PM*).
+- **Investigation status mix** — how many cases are under investigation, chargesheeted,
+  closed, or freshly registered.
+- **Recent FIRs** — the latest filings with live status pills.
+
+*"Theft, 40% of this zone, peaking 9–11 PM"* is not a statistic. It's a patrol roster.
+
+### 3. Criminal network & relationship analysis
+
+*Framework item 2 — criminal network analysis, repeat-offender tracking.*
+
+The single hardest requirement, because **the schema has no person identity** — every accused
+row is bound to one case, so the same individual recurs as a fresh record in every FIR, under
+transliteration variants of their name (`Ravi Kumar` / `RaviKumar` / `Ravi Kumara`).
+
+- **Identity is reconstructed** across cases by the entity-resolution engine
+  ([details below](#entity-resolution)), scored against ground truth at **F1 0.943**.
+- **A person profile** shows the collapsed name variants, linked cases, estimated age, a risk
+  score, and the associates that emerged from shared cases.
+- **The network graph** is node-based: the resolved person at the centre, their co-accused
+  associates around them, each edge weighted by shared-case confidence. **2,366** associations
+  were inferred across the corpus.
+- **Repeat-offender tracking** falls straight out of resolution — an individual linked to
+  multiple incidents across jurisdictions is exactly what the clustering surfaces.
+
+### 4. Trends, alerts & risk scoring
+
+*Framework items 3 & 8 — trend analytics, crime forecasting & early warning.*
+
+- **Trend analytics** compare a recent window against the prior one per crime sub-head, and
+  count which offence types are rising versus falling — not just a single total line.
+- **Risk-scored zones.** Each zone carries a risk level and percentage; the ones above
+  threshold surface as active alerts, and the top bar's live notification badge reflects that
+  count (it is **not** a hardcoded number — remove a zone from the threshold and the badge drops).
+- **Offender risk scoring** ranks repeat offenders by case count weighted by involvement in
+  heinous offences, so investigation effort can be prioritised.
+
+### 5. Case file with real writes
+
+*Framework items 6 & 10 — investigator decision support, governance.*
+
+The Case / FIR Details screen is a working case file, not a read-only view. Tabs cover Case
+Information, Accused, Victims, Acts & Sections, Timeline and Location — all populated from the
+record. On top of that, three **persisted** actions:
+
+- **Add note** — an investigation note, saved to Catalyst Data Store, appearing in the case
+  timeline with author, unit and timestamp.
+- **Update status** — a status transition with a recorded reason.
+- **Close case** — a move to *Closed*, recorded.
+
+Reads stay authoritative from the original FIR record; writes are layered **over** it, so the
+underlying case data is never mutated — the same principle as an append-only case diary. Each
+action also writes to the audit trail, and each is gated by the command-scope check below.
+
+### 6. Audit trail
+
+*Framework item 10 — audit logs and traceability.*
+
+Every write **and every refused attempt**, listed with officer, unit, action, target,
+timestamp and outcome. Refusals are the point: a successful action looks identical whether or
+not the access check ran, but a recorded *denial* is positive proof it ran. This is the
+difference between claiming compliance and demonstrating it.
+
+### 7. Reports & export
+
+*Framework item 1 — intelligence reporting.*
+
+Crime-summary, crime-head, zone-comparison and monthly-trend reports, each downloadable as a
+real CSV generated from the computed figures (not a static file) with a UTF-8 BOM so it opens
+cleanly in Excel — the tool this platform is meant to replace.
 
 ---
 
@@ -86,7 +198,9 @@ Three properties make this more than decoration:
 2. **The station is never taken from the request.** It comes from a `CaseMasterID → PoliceStationID` map bundled with the function, so naming an arbitrary case id cannot escape your own command.
 3. **Refusals are recorded.** A denied action writes an `AuditLog` row with `Outcome='deny'`. A successful action proves nothing about access control; a recorded refusal proves the check ran.
 
-<sub>Enforcement is asserted by tests, not just claimed — see `catalyst-app/functions/kspwrite/scope.test.js`, including *"command position, not rank, decides access to the featured case"*.</sub>
+And it **fails safe**. If the session can't be resolved, or the officer isn't mapped to a unit, scope resolves to the *empty* set — no authority — rather than defaulting to anything. Access widens only on positive evidence of posting, never on its absence.
+
+<sub>Enforcement is asserted by tests, not just claimed — see `catalyst-app/functions/kspwrite/scope.test.js`, including *"command position, not rank, decides access to the featured case"* and *"an unknown unit resolves to empty scope, never to global scope"*.</sub>
 
 ---
 
@@ -143,25 +257,51 @@ Two properties matter more than volume:
 
 ### Entity resolution
 
-The hardest requirement, because the schema gives no person key. Names recur as transliteration variants (`Ravi Kumar` / `RaviKumar` / `Ravi Kumara`).
+The hardest requirement, because the schema gives no person key. Names recur as transliteration variants (`Ravi Kumar` / `RaviKumar` / `Ravi Kumara`). The pipeline reconstructs identity in four stages, all in pure Python:
 
-Blocking on gender + name prefix, Jaro-Winkler taken as `min(forward, reversed)` so the surname must agree too — plain JW over-weights a shared prefix and merges *Venkatesh Nayak* with *Venkatesh Achar* — then union-find clustering with an age-consistency guard.
+1. **Blocking.** Candidates are grouped by gender plus the first two characters of a normalised name key. Variants preserve leading characters, so true matches share a block while blocks stay small — this keeps the comparison count tractable without a database.
+2. **Similarity.** For each pair in a block, Jaro-Winkler is computed both forward and on the reversed strings, and the **minimum** is taken. Plain Jaro-Winkler over-weights a shared prefix and would merge *Venkatesh Nayak* with *Venkatesh Achar*; taking the min forces the **surname** to agree too. Implemented locally — no fuzzy-match dependency.
+3. **Clustering.** Pairs above threshold, and within an age tolerance, are unioned with union-find. Cluster cohesion (mean intra-cluster similarity) becomes the person's confidence score.
+4. **Association & risk.** Co-accused in the same case become weighted graph edges; risk is repeat-count weighted by heinous involvement.
 
-Measured against generator ground truth:
+**It is measured, not asserted.** The generator emits ground-truth identities, and resolution is scored pairwise against them:
 
-| Precision | Recall | F1 | Resolved | True |
-|---|---|---|---|---|
-| **0.934** | **0.953** | **0.943** | 1,634 | 1,393 |
+| Precision | Recall | F1 | Resolved | True persons | Pairs evaluated |
+|---|---|---|---|---|---|
+| **0.934** | **0.953** | **0.943** | 1,634 | 1,393 | 37,673 |
+
+An entity-resolution system that can't be measured shouldn't be trusted with an investigation. This one reports its own error rate, in-product on the Person page.
 
 ---
 
 ## <img src="docs/assets/icons/stack.svg" width="22" align="center"> Stack
 
 **Frontend** React 19 · TypeScript · Vite · Leaflet + leaflet.heat · hand-built SVG charts (no chart library)
-**Backend** Node 20 · Express · `sql.js` (WASM SQLite — AppSail's managed runtime cannot build native modules) · `zcatalyst-sdk-node`
-**Pipeline** Python 3, standard library only — Jaro-Winkler and union-find are implemented locally rather than pulled in
+**Backend** Node 20 · Express · `sql.js` (WASM SQLite) · `zcatalyst-sdk-node`
+**Pipeline** Python 3, standard library only — Jaro-Winkler and union-find implemented locally
 
 ~9,600 lines across app, API and pipeline.
+
+### Four decisions worth explaining
+
+**Charts are hand-built SVG, not a chart library.** Every donut, sparkline, line chart and bar
+is drawn directly. It keeps the bundle small, and it means the visual language — the single-hue
+sequential ramp, the one sanctioned green→red exception for crime density — is enforced by us
+rather than fought against a library's defaults.
+
+**SQLite compiled to WebAssembly.** Catalyst AppSail's managed Node runtime cannot build native
+modules, so `better-sqlite3` fails there. `sql.js` is the same engine as pure WASM, letting the
+identical SQL run locally and in production against a database bundled with the service.
+
+**The write layer is a separate serverless function, deliberately.** The app and the read API sit
+on different domains, and the session cookie belongs to the app's domain — it is never sent to
+the other one. Writes are therefore served from the *same* origin as the app, so identity
+resolves server-side with no tokens handled in the browser. A full explanation is in
+[`docs/design/access-control-and-writes.md`](docs/design/access-control-and-writes.md) §6.
+
+**The data generator is a component, not a fixture.** No real crime data exists for this
+challenge, so the generator is tested, reproducible, and schema-conformant by construction —
+which is what makes "swap in real SCRB extracts" a credible claim rather than a hope.
 
 ---
 
@@ -202,6 +342,27 @@ cd pipeline && python -m unittest test_determinism  # 3 — reproducibility acro
 The five-minute walkthrough, with timings and the exact narration, is in [`docs/demo-script.md`](docs/demo-script.md).
 
 Short version: sign in as the Sub-Inspector, add a note to a case in your own station — it persists. Sign in as the ASP, who outranks you, and the same action on that case is refused. Sign in as SCRB and it succeeds. Open the Audit Trail: all three, with officer, unit, time and outcome.
+
+---
+
+## <img src="docs/assets/icons/team.svg" width="22" align="center"> Coverage against the challenge framework
+
+Challenge 02 lists six capability groups. Marked honestly — **Built**, **Partial**, or **Not built** — because a judge will find the gaps either way, and naming them first is worth more than hiding them.
+
+| Capability (from the brief) | Status | Where it lives |
+|---|---|---|
+| Interactive dashboards & geospatial maps | **Built** | Command View, Map & Hotspots |
+| District-level drilldown | **Built** | Zone drilldown; cluster Zone/District levels |
+| Spatiotemporal clusters (time × location) | **Built** | 24-hour scrubber over the heat surface |
+| Emerging trend alerts | **Built** | Trends & Alerts; risk-scored zones; live alert badge |
+| Relationship mapping (node-based) | **Built** | Person & Network graph |
+| Repeat-offender tracking | **Built** | Entity resolution, F1 **0.943** |
+| Association detection | **Built** | 2,366 co-accused associations inferred |
+| Predictive risk scoring | **Partial** | Zone and offender risk are **transparent heuristics** (recency, volume, heinous weighting), not a trained model. Deliberate: an unexplainable risk score is a liability in an investigation, and the brief demands explainability. |
+| Socio-economic correlation | **Partial** | The schema carries occupation, caste and religion, and case records expose them. No external census or urbanisation layer is joined. |
+| Anomaly detection | **Not built** | Trend deltas surface unusual movement, but there is no formal outlier model. |
+| Modus operandi analysis | **Not built** | The published ER diagram has no MO field to analyse. |
+| Role-based access, audit & traceability | **Built** | Beyond the brief — enforced server-side, refusals recorded |
 
 ---
 
