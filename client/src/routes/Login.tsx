@@ -10,9 +10,9 @@ import "./Login.css";
 /**
  * Officer login — real Catalyst Authentication.
  *
- * The credential fields are Catalyst's embedded sign-in iframe, styled by
- * public/catalyst-login.css to match our tokens. We deliberately do not own a
- * password field: Catalyst holds the credential, and this app never sees it.
+ * The credential fields are Catalyst's embedded sign-in iframe, rendered in
+ * Catalyst's own theme (see the note on css_url below). We deliberately do not
+ * own a password field: Catalyst holds the credential, and this app never sees it.
  *
  * On success Catalyst sets the session cookie and returns to the app; /session
  * then resolves the officer to a UnitID + RankID, which scopes everything
@@ -20,6 +20,15 @@ import "./Login.css";
  */
 
 const LOGIN_ELEMENT_ID = "catalyst-login";
+
+const DEMO_PASSWORD = "Ksp@Datathon2026";
+
+/** Three positions in the command tree — the contrast is the demo. */
+const DEMO_ACCOUNTS = [
+  { email: "amaan.k2405@gmail.com", role: "Sub-Inspector", scope: "Indiranagar PS" },
+  { email: "amaank2405@gmail.com", role: "ASP", scope: "Bengaluru South" },
+  { email: "a.maank2405@gmail.com", role: "DGP", scope: "SCRB · statewide" },
+];
 
 const FEATURES: { icon: IconName; title: string; body: string }[] = [
   {
@@ -48,6 +57,7 @@ export function Login() {
   const navigate = useNavigate();
   const { loading, authenticated } = useAuth();
   const [sdk, setSdk] = useState<"loading" | "ready" | "unavailable">("loading");
+  const [copied, setCopied] = useState<string | null>(null);
 
   // Already signed in — don't make them log in again.
   useEffect(() => {
@@ -61,9 +71,20 @@ export function Login() {
       if (!live) return;
       if (!ok) return setSdk("unavailable");
       try {
+        // Deliberately NO css_url.
+        //
+        // Catalyst's `css_url` REPLACES its own stylesheet rather than adding
+        // to it. The sign-in form is a multi-state UI — password, OTP, TOTP,
+        // CAPTCHA, backup codes, password-expired — and Zoho collapses the
+        // inactive states with a `.zeroheight` class defined in that stylesheet.
+        // Supplying our own dropped their CSS entirely, `.zeroheight` stopped
+        // existing, and every hidden panel expanded: a 2,000px form listing OTP
+        // and CAPTCHA fields at once. Catalyst's default theme is clean and
+        // complete, and our card supplies the branding around it.
+        const origin = window.location.origin;
+        const base = import.meta.env.BASE_URL;
         window.catalyst?.auth?.signIn?.(LOGIN_ELEMENT_ID, {
-          css_url: `${import.meta.env.BASE_URL}catalyst-login.css`,
-          service_url: `${import.meta.env.BASE_URL}index.html`,
+          service_url: `${origin}${base}index.html`,
         });
         setSdk("ready");
       } catch {
@@ -78,10 +99,14 @@ export function Login() {
   return (
     <div className="login">
       <div className="login__main">
+        {/* The building sits on the grid, not inside the brand column: the brand
+            column clips at its own right edge, which sliced the monument's right
+            wall off. Out here it can run to the login card's edge. */}
+        <img className="login__building" src={building} alt="" aria-hidden="true" />
+
         {/* --- Left: brand --------------------------------------------- */}
         <section className="login__brand">
           <img className="login__map" src={stateMap} alt="" aria-hidden="true" />
-          <img className="login__building" src={building} alt="" aria-hidden="true" />
 
           <header className="login__brand-head">
             <Emblem size={46} />
@@ -127,9 +152,11 @@ export function Login() {
               <Emblem size={96} medallion className="login__card-emblem" />
 
               <h2 className="login__card-title">Officer Login</h2>
-              <p className="login__card-sub">
-                Access the Crime Intelligence Platform
-              </p>
+              {/* Catalyst's iframe prints its own "Sign in to access …" line, so
+                  ours is dropped once the form mounts rather than repeating it. */}
+              {sdk !== "ready" && (
+                <p className="login__card-sub">Access the Crime Intelligence Platform</p>
+              )}
 
               {sdk === "unavailable" ? (
                 <div className="login__embed-note" role="status">
@@ -148,6 +175,35 @@ export function Login() {
                   )}
                   {/* Catalyst injects its sign-in iframe here. */}
                   <div id={LOGIN_ELEMENT_ID} className="login__embed" />
+
+                  {/* Evaluator credentials. Each row is a different position in
+                      the command tree, which is what the demo turns on. */}
+                  <div className="login__demo">
+                    <p className="login__demo-head">
+                      <Icon name="user" size={14} />
+                      Demo accounts — all use password <code>{DEMO_PASSWORD}</code>
+                    </p>
+                    <ul className="login__demo-list">
+                      {DEMO_ACCOUNTS.map((a) => (
+                        <li key={a.email} className="login__demo-row">
+                          <button
+                            type="button"
+                            className="login__demo-copy"
+                            title="Copy email"
+                            onClick={() => {
+                              void navigator.clipboard?.writeText(a.email);
+                              setCopied(a.email);
+                              window.setTimeout(() => setCopied(null), 1400);
+                            }}
+                          >
+                            {copied === a.email ? "Copied" : a.email}
+                          </button>
+                          <span className="login__demo-role">{a.role}</span>
+                          <span className="login__demo-scope">{a.scope}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 </>
               )}
             </div>
