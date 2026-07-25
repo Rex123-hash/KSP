@@ -77,6 +77,19 @@ function resolveCaseId(raw) {
 
 // ---- identity & authorization ----------------------------------------------
 
+/**
+ * catalyst.initialize() THROWS when it cannot read project details — which is
+ * the case anywhere outside the Catalyst runtime (local boot, smoke tests). It
+ * must never take a request down, so failure degrades to "no session".
+ */
+function initCatalyst(req) {
+  try {
+    return catalyst.initialize(req);
+  } catch (_) {
+    return null;
+  }
+}
+
 async function catalystUser(capp) {
   try {
     const u = await capp.userManagement().getCurrentUser();
@@ -106,7 +119,9 @@ async function appUserFor(capp, email) {
  * than defaulting to anything.
  */
 async function resolveActor(req) {
-  const capp = catalyst.initialize(req);
+  const capp = initCatalyst(req);
+  if (!capp) return { capp: null, actor: null };
+
   const cu = await catalystUser(capp);
   if (!cu) return { capp, actor: null };
 
@@ -206,6 +221,15 @@ async function requireCaseAccess(req, res, { action }) {
 // ---- routes -----------------------------------------------------------------
 
 const router = express.Router();
+
+// Express 4 does not catch rejections from async handlers — one unhandled
+// rejection takes the whole function down. Wrap every handler once, here, so a
+// failure becomes a 500 rather than a dead process.
+for (const method of ['get', 'post', 'put']) {
+  const original = router[method].bind(router);
+  router[method] = (path, handler) =>
+    original(path, (req, res, next) => Promise.resolve(handler(req, res, next)).catch(next));
+}
 
 router.get('/health', (_req, res) => res.json({ ok: true, service: 'kspwrite' }));
 
@@ -528,5 +552,12 @@ app.use('/', router);
 app.use('/server/kspwrite', router);
 
 app.use((_req, res) => res.status(404).json({ error: 'not_found' }));
+
+// Final safety net for anything the route wrappers forward.
+app.use((err, _req, res, _next) => {
+  console.error('unhandled', err && (err.stack || err.message || err));
+  if (res.headersSent) return;
+  res.status(500).json({ error: 'server_error', message: 'Unexpected server error.' });
+});
 
 module.exports = app;
