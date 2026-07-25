@@ -143,3 +143,18 @@
 .hotspot-map__filter button:hover {
   border-color: var(--line-strong);
 }
+
+/* Cluster tooltips — match the app's card styling rather than Leaflet's default */
+.hotspot-map__tip {
+  padding: 5px 9px;
+  font-size: var(--text-label);
+  color: var(--ink-primary);
+  background: var(--surface-card);
+  border: 1px solid var(--line-hairline);
+  border-radius: 6px;
+  box-shadow: var(--shadow-md, 0 2px 8px rgba(0, 0, 0, 0.12));
+}
+
+.hotspot-map__tip::before {
+  display: none;
+}

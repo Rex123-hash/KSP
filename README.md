@@ -46,7 +46,7 @@ The challenge brief describes an analytical ecosystem with four failures. Each m
 
 ## <img src="docs/assets/icons/features.svg" width="22" align="center"> What it does
 
-**Spatiotemporal hotspots.** A heatmap over 5,200 FIRs with a 24-hour scrubber and crime-head filter. Play the animation and offence clusters migrate across the city as the day advances — the visual argument for shift-based deployment.
+**Spatiotemporal hotspots.** A heatmap over 5,200 FIRs with a 24-hour scrubber and crime-head filter. Play the animation and offence clusters migrate across the city as the day advances — the visual argument for shift-based deployment. Switch the surface to counted clusters, at zone or district granularity, when you need numbers rather than a gradient.
 
 **Zone drilldown.** Any zone opens to per-station intelligence: crime-head split, peak window derived from actual incident hours, investigation status mix, and recent FIRs. A heatmap says *where*; this says *what, when, and how far along*.
 
@@ -210,7 +210,7 @@ Short version: sign in as the Sub-Inspector, add a note to a case in your own st
 Stated plainly, because a labelled gap is more credible than a half-working feature:
 
 - **Password changes** are delegated to Catalyst's own reset flow. This codebase contains no password field and never handles a credential.
-- **Document upload**, cluster view, and district-level drilldown are labelled in-product as not in this build.
+- **Document upload** is labelled in-product as not in this build.
 - **Financial transaction analysis** (framework item 7) has no schema support — there is no transaction table in the published ER diagram.
 - Data is **synthetic**. The system is schema-conformant by construction, so real SCRB extracts drop in by swapping the source.
 

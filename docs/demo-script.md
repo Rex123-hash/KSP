@@ -49,6 +49,14 @@ The single most common failure is talking over a page that hasn't loaded. Click,
 > shifts the concentration elsewhere. A static map averages that away — and
 > averaging is exactly what loses you the deployment decision.
 
+**Action:** Click the **View By** chip to switch from Heatmap to **Clusters**, then
+the **Level** chip to go from Zone to District.
+
+> The same data, counted rather than smeared. Zone granularity gives you roughly
+> seven hundred clusters across the state; district level collapses that to
+> fifty-eight. A gradient tells you where it's hot — a count tells you how many
+> officers you need.
+
 **Action:** Click **View Zone Details**.
 
 > Drilling into a zone gives the station-level answer: the crime-head split, the
@@ -197,6 +205,6 @@ shows one.
 
 **"What isn't finished?"**
 Password changes are delegated to Catalyst rather than implemented. Document
-upload, cluster view and district drilldown are labelled in-product. Financial
+upload is labelled in-product. Financial
 transaction analysis has no schema support — there's no transaction table in the
 ER diagram.

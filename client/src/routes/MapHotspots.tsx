@@ -1,10 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { Icon } from "../components/Icon";
 import { Panel } from "../components/Panel";
-import { HotspotMap } from "../components/HotspotMap";
+import { HotspotMap, type MapLevel, type MapView } from "../components/HotspotMap";
 import { Donut } from "../components/Donut";
 import { PageState } from "../components/PageState";
-import { protoToast } from "../components/Toast";
 import { apiGet, useApi } from "../api";
 import { useMeta } from "../meta";
 import { type CrimeHeadSlice } from "../data/mapMock";
@@ -67,6 +66,8 @@ export function MapHotspots() {
   const [hour, setHour] = useState<number | null>(null); // null = all day
   const [headIdx, setHeadIdx] = useState(0); // index into HEADS
   const [playing, setPlaying] = useState(false);
+  const [view, setView] = useState<MapView>("heat");
+  const [level, setLevel] = useState<MapLevel>("zone");
   const playRef = useRef<number | null>(null);
   const state = useApi<MapData>("/map");
   const { dateRange } = useMeta();
@@ -149,12 +150,12 @@ export function MapHotspots() {
         <button
           type="button"
           className="filter-chip"
-          onClick={() => protoToast("Cluster view isn’t in this build yet")}
+          onClick={() => setView((v) => (v === "heat" ? "clusters" : "heat"))}
         >
           <span className="filter-chip__label">View By</span>
           <span className="filter-chip__value">
-            <Icon name="map-pin" size={14} />
-            Heatmap
+            <Icon name={view === "heat" ? "map-pin" : "layers"} size={14} />
+            {view === "heat" ? "Heatmap" : "Clusters"}
             <Icon name="chevron-down" size={14} strokeWidth={2} />
           </span>
         </button>
@@ -162,11 +163,15 @@ export function MapHotspots() {
         <button
           type="button"
           className="filter-chip"
-          onClick={() => protoToast("District drilldown isn’t in this build yet")}
+          onClick={() => {
+            setLevel((l) => (l === "zone" ? "district" : "zone"));
+            // Granularity only shows in the cluster view, so switch to it.
+            setView("clusters");
+          }}
         >
           <span className="filter-chip__label">Level</span>
           <span className="filter-chip__value">
-            Zone
+            {level === "zone" ? "Zone" : "District"}
             <Icon name="chevron-down" size={14} strokeWidth={2} />
           </span>
         </button>
@@ -175,7 +180,14 @@ export function MapHotspots() {
       <div className="map-grid">
         <div className="map-grid__main">
           <div className="map-panel">
-            <HotspotMap height={512} showFilterChip={false} filterHour={hour} filterHead={headFilter} />
+            <HotspotMap
+              height={512}
+              showFilterChip={false}
+              filterHour={hour}
+              filterHead={headFilter}
+              view={view}
+              level={level}
+            />
           </div>
 
           <Panel

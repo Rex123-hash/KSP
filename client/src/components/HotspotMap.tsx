@@ -38,11 +38,28 @@ const HEAT_GRADIENT = {
   1.0: "#d94436",
 };
 
+export type MapView = "heat" | "clusters";
+export type MapLevel = "zone" | "district";
+
+/**
+ * Grid size for cluster aggregation, in degrees.
+ *
+ * The hotspot points carry coordinates but no administrative unit, so a cluster
+ * is a spatial cell rather than a named zone or district. The two sizes are
+ * chosen to read at those scales: roughly 2 km for zone, roughly 17 km for
+ * district at this latitude.
+ */
+const CELL_DEG: Record<MapLevel, number> = { zone: 0.02, district: 0.15 };
+
+const RAMP = ["#5f9d7d", "#b8d14e", "#f2c53d", "#ee8b3a", "#d94436"];
+
 export function HotspotMap({
   height = 380,
   showFilterChip = true,
   filterHour = null,
   filterHead = null,
+  view = "heat",
+  level = "zone",
 }: {
   height?: number;
   /** The full Map page moves crime-head filtering into its own top bar, so the
@@ -52,10 +69,15 @@ export function HotspotMap({
   filterHour?: number | null;
   /** Restrict to a crime-head id. null = all heads. */
   filterHead?: number | null;
+  /** Continuous heat surface, or discrete counted clusters. */
+  view?: MapView;
+  /** Cluster granularity — ignored by the heat view. */
+  level?: MapLevel;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const heatRef = useRef<L.HeatLayer | null>(null);
+  const clusterRef = useRef<L.LayerGroup | null>(null);
   const [data, setData] = useState<HotspotResponse | null>(null);
 
   // Create the map once.
@@ -92,23 +114,77 @@ export function HotspotMap({
       const d = Math.min((h - filterHour + 24) % 24, (filterHour - h + 24) % 24);
       return d <= 1;
     };
-    const latlngs = data.points
-      .filter((p) => hourWindow(p[3]) && (filterHead == null || p[4] === filterHead))
-      .map((p) => [p[0], p[1], p[2]] as [number, number, number]);
-    if (heatRef.current) {
-      heatRef.current.setLatLngs(latlngs);
-    } else {
-      heatRef.current = L.heatLayer(latlngs, {
-        radius: 18,
-        blur: 24,
-        maxZoom: 13,
-        minOpacity: 0.3,
-        max: 3,
-        gradient: HEAT_GRADIENT,
-      }).addTo(map);
+    const shown = data.points.filter(
+      (p) => hourWindow(p[3]) && (filterHead == null || p[4] === filterHead)
+    );
+
+    if (view === "heat") {
+      // Tear down clusters, draw the heat surface.
+      if (clusterRef.current) {
+        clusterRef.current.remove();
+        clusterRef.current = null;
+      }
+      const latlngs = shown.map((p) => [p[0], p[1], p[2]] as [number, number, number]);
+      if (heatRef.current) {
+        heatRef.current.setLatLngs(latlngs);
+      } else {
+        heatRef.current = L.heatLayer(latlngs, {
+          radius: 18,
+          blur: 24,
+          maxZoom: 13,
+          minOpacity: 0.3,
+          max: 3,
+          gradient: HEAT_GRADIENT,
+        }).addTo(map);
+      }
+      return;
     }
-    if (!heatRef.current) map.setView(data.center, data.zoom);
-  }, [data, filterHour, filterHead]);
+
+    // --- Cluster view --------------------------------------------------------
+    if (heatRef.current) {
+      heatRef.current.remove();
+      heatRef.current = null;
+    }
+    if (clusterRef.current) clusterRef.current.remove();
+
+    // Bin points into a fixed grid, then place one marker at each cell's centroid.
+    const cell = CELL_DEG[level];
+    const bins = new Map<string, { lat: number; lng: number; n: number }>();
+    for (const [lat, lng] of shown) {
+      const key = `${Math.floor(lat / cell)}:${Math.floor(lng / cell)}`;
+      const b = bins.get(key);
+      if (b) {
+        b.lat += lat;
+        b.lng += lng;
+        b.n += 1;
+      } else {
+        bins.set(key, { lat, lng, n: 1 });
+      }
+    }
+
+    const cells = [...bins.values()];
+    const max = cells.reduce((m, c) => Math.max(m, c.n), 1);
+    const group = L.layerGroup();
+
+    for (const c of cells) {
+      const share = c.n / max;
+      const marker = L.circleMarker([c.lat / c.n, c.lng / c.n], {
+        radius: 9 + Math.sqrt(share) * 17,
+        color: "#ffffff",
+        weight: 1.5,
+        fillColor: RAMP[Math.min(RAMP.length - 1, Math.floor(share * RAMP.length))],
+        fillOpacity: 0.82,
+      });
+      marker.bindTooltip(
+        `<strong>${c.n.toLocaleString("en-IN")}</strong> case${c.n === 1 ? "" : "s"}`,
+        { direction: "top", className: "hotspot-map__tip" }
+      );
+      group.addLayer(marker);
+    }
+
+    group.addTo(map);
+    clusterRef.current = group;
+  }, [data, filterHour, filterHead, view, level]);
 
   return (
     <div className="hotspot-map" style={{ height }}>
@@ -138,7 +214,11 @@ export function HotspotMap({
       </div>
 
       <figure className="hotspot-map__legend">
-        <figcaption>Case Density</figcaption>
+        <figcaption>
+          {view === "heat"
+            ? "Case Density"
+            : `Cases per ${level === "zone" ? "zone" : "district"} cluster`}
+        </figcaption>
         <div className="hotspot-map__ramp" role="presentation" />
         <div className="hotspot-map__legend-ends">
           <span>Low</span>
