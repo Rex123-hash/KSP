@@ -6,8 +6,6 @@
 }
 
 .login__main {
-  position: relative;
-  overflow: hidden;
   flex: 1;
   display: grid;
   grid-template-columns: minmax(0, 1.08fr) minmax(0, 1fr);
@@ -49,26 +47,13 @@
   user-select: none;
 }
 
-/* Building: positioned on .login__main rather than inside the brand column,
-   because that column clips at its right edge and was slicing the monument's
-   right wall. Sized so the artwork (which fills to 98.8% of the source image)
-   lands flush against the login card. */
+/* Building: full-width at the foot, bleeding off both edges, dome up at the
+   tagline line, base tucked behind the feature card. */
 .login__building {
-  left: -3.4%;
+  left: -8%;
   bottom: -2%;
-  /* The card is centred in the right column, so its left edge tracks the
-     viewport as 0.76vw - 234px. Solving for the artwork's right edge (the
-     source image is opaque to 98.8% of its width) gives this calc, which keeps
-     the monument flush to the card instead of drifting at other widths. */
-  width: calc(80.3% - 237px);
+  width: 116%;
   height: auto;
-  z-index: 2;
-}
-
-@media (max-width: 1000px) {
-  .login__building {
-    display: none;
-  }
 }
 
 /* State outline: upper centre-right, clear of the headline text and the card. */
@@ -80,17 +65,11 @@
 }
 
 
-/* Stacking order on the login grid, lowest first:
-     1  .login__panel background
-     2  .login__building   (paints over the panel bg so it can reach the card)
-     3  brand text + feature cards
-     4  .login__card
-   The building is decoration; nothing readable may sit under it. */
 .login__brand-head,
 .login__hero,
 .login__features {
   position: relative;
-  z-index: 3;
+  z-index: 1;
 }
 
 .login__brand-head {
@@ -188,8 +167,6 @@
    ========================================================================== */
 
 .login__panel {
-  position: relative;
-  z-index: 1;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -204,8 +181,6 @@
 }
 
 .login__card {
-  position: relative;
-  z-index: 4; /* above the building and the brand content */
   width: 100%;
   max-width: 468px;
   background: var(--surface-card);

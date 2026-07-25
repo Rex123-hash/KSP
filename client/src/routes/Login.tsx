@@ -178,14 +178,10 @@ export function Login() {
   return (
     <div className="login">
       <div className="login__main">
-        {/* The building sits on the grid, not inside the brand column: the brand
-            column clips at its own right edge, which sliced the monument's right
-            wall off. Out here it can run to the login card's edge. */}
-        <img className="login__building" src={building} alt="" aria-hidden="true" />
-
         {/* --- Left: brand --------------------------------------------- */}
         <section className="login__brand">
           <img className="login__map" src={stateMap} alt="" aria-hidden="true" />
+          <img className="login__building" src={building} alt="" aria-hidden="true" />
 
           <header className="login__brand-head">
             <Emblem size={46} />
