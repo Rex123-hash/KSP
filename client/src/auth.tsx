@@ -173,7 +173,8 @@ export function loadCatalystSdk(): Promise<boolean> {
       document.head.appendChild(el);
     });
 
-  return inject("https://static.zohocdn.com/catalyst/sdk/js/4.4.0/catalystWebSDK.js")
+  // Version pinned to what this project's console emits (Authentication → Setup).
+  return inject("https://static.zohocdn.com/catalyst/sdk/js/4.6.2/catalystWebSDK.js")
     .then(() => inject("/__catalyst/sdk/init.js"))
     .then(() => Boolean(window.catalyst?.auth?.signIn))
     .catch(() => false);

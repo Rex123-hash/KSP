@@ -194,7 +194,8 @@ def build(conn):
     victim_id = 0
     arrest_id = 0
     cs_id = 0
-    serial_by_key = {}
+    # One FIR register per station per year, keyed (PoliceStationID, year).
+    fir_serial = {}
 
     for _ in range(N_CASES):
         case_id += 1
@@ -249,9 +250,14 @@ def build(conn):
         district4 = f"{district_id:04d}"
         station4 = f"{station:04d}"
         year = incident_dt.year
-        key = (cat_id, station, year)
-        serial_by_key[key] = serial_by_key.get(key, 0) + 1
-        serial = serial_by_key[key]
+        # The serial IS the FIR number: drawn from the station's register for the
+        # year, so CaseNo ("serial/year" in the UI) identifies one case within a
+        # station — as a real FIR number does. It is deliberately not unique
+        # statewide; two stations both hold an FIR 1/2026. CrimeNo embeds the same
+        # serial so the two numbers on a case can never contradict each other.
+        key = (station, year)
+        fir_serial[key] = fir_serial.get(key, 0) + 1
+        serial = fir_serial[key]
         crime_no = f"{cat_id}{district4}{station4}{year}{serial:05d}"
         case_no = f"{year}{serial:05d}"
 

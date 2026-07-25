@@ -116,6 +116,35 @@ test('CrimeNo is a unique key: every crime number maps to a known case', () => {
   }
 });
 
+test('the FIR number in each CrimeNo is unique within its station and year', () => {
+  // CrimeNo is 1-digit category + 4-digit district + 4-digit station + 4-digit
+  // year + 5-digit serial, and that trailing serial is the case's FIR number.
+  // Asserting the (station, year, serial) triple is unique is asserting that
+  // CaseNo — which the UI renders as "serial/year" — identifies exactly one case
+  // within a station's register for that year, the way a real FIR number does.
+  // It is checked here, from the bundled data, because these files are the write
+  // layer's contract with the generator: a regenerated dataset that reused FIR
+  // numbers would make the lookups below ambiguous.
+  const seen = new Map();
+  for (const [crimeNo, caseId] of Object.entries(crimeCase)) {
+    assert.strictEqual(crimeNo.length, 18, `CrimeNo ${crimeNo} is not 18 digits`);
+
+    const station = Number(crimeNo.slice(5, 9));
+    const firNo = `${Number(crimeNo.slice(13))}/${crimeNo.slice(9, 13)}`;
+
+    assert.strictEqual(
+      station,
+      caseStation[String(caseId)],
+      `CrimeNo ${crimeNo} encodes station ${station}, but case ${caseId} belongs to ${caseStation[String(caseId)]}`
+    );
+
+    const key = `${station}:${firNo}`;
+    assert.ok(!seen.has(key), `FIR ${firNo} at station ${station} is used by cases ${seen.get(key)} and ${caseId}`);
+    seen.set(key, caseId);
+  }
+  assert.strictEqual(seen.size, Object.keys(caseStation).length, 'every case should hold one FIR number');
+});
+
 test('command position, not rank, decides access to the featured case', () => {
   // The featured case sits in Bengaluru East. A South-division ASP outranks an
   // East-division SI, yet must still be refused — this is the property the

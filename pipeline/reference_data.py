@@ -219,6 +219,12 @@ def transliteration_variants(canonical):
     inventing them would just manufacture unresolvable noise. The variants here
     preserve enough signal that the same person clusters while distinct persons
     stay apart.
+
+    Returned in a stable order. The set below de-duplicates variants that
+    collide, but CPython salts string hashing per process, so iterating it
+    directly would hand the generator a different order on every run — and
+    rng.choice() would then record a different spelling for the same person
+    despite the fixed seed. Sorting is what makes the build reproducible.
     """
     parts = canonical.split()
     out = {canonical}
@@ -241,4 +247,4 @@ def transliteration_variants(canonical):
         out.add(d)
     else:
         out.add(canonical + "a")
-    return [v for v in out if v.strip()]
+    return sorted(v for v in out if v.strip())

@@ -69,9 +69,11 @@ from `data/generated/ksp.db` and committed:
 | `crime-case.json` | Which case is `CrimeNo` X? (5,200) | ~60 KB |
 | `featured.json` | Which case does the Case Details page show? | tiny |
 
-`crime-case.json` keys on `CrimeNo`, not `CaseNo`: **`CaseNo` is not unique in the
-generated data** — 5,200 cases share only 261 distinct `CaseNo` values, while `CrimeNo` is
-one per case. `featured.json` mirrors the read API's `/api/cases/featured` ordering, so the
+`crime-case.json` keys on `CrimeNo`, not `CaseNo`: **`CaseNo` is an FIR number and so is
+not unique statewide** — it identifies one case within its station's register for a year
+(two stations both hold an FIR 1/2026), whereas `CrimeNo` is one per case and encodes
+station, year and FIR serial together. `scope.test.js` asserts both properties from these
+files. `featured.json` mirrors the read API's `/api/cases/featured` ordering, so the
 write layer can address the case the page is showing without modifying AppSail.
 
 These files only *identify* a case. The station always comes from `case-station.json`, so a

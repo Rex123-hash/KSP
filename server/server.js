@@ -1,5 +1,6 @@
 import express from "express";
 import cors from "cors";
+import { pathToFileURL } from "node:url";
 import { db, STATUS, firNo } from "./db.js";
 
 const app = express();
@@ -498,6 +499,10 @@ app.get("/api/health", (_req, res) => res.json({ ok: true, cases: one("SELECT CO
 export { app };
 
 // Only listen when run directly (not when imported by the static exporter).
-if (process.argv[1] && import.meta.url === `file://${process.argv[1].replace(/\\/g, "/")}`) {
+// Compare resolved file URLs rather than building one by hand: a Windows path
+// ("E:\\...") has no leading slash, so string-building yields "file://E:/..."
+// against import.meta.url's "file:///E:/..." and the guard never matches —
+// leaving `node server.js` to exit 0 without listening or logging.
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   app.listen(PORT, () => console.log(`KSP API on http://localhost:${PORT}  (${DATE_RANGE})`));
 }

@@ -45,8 +45,9 @@ await writeFile(join(OUT, "org.json"), JSON.stringify(org));
 // ---- crime-case.json:   CrimeNo      -> CaseMasterID ------------------------
 // The read API identifies a case in its payload by CrimeNo, not by primary key,
 // so the function needs to resolve one to the other. CrimeNo is used rather than
-// CaseNo because CaseNo is NOT unique in the generated data (5200 cases share
-// only 261 distinct CaseNo values), while CrimeNo is one-per-case.
+// CaseNo because CaseNo is an FIR number: unique within a station's register for
+// a year, but deliberately not statewide, so it cannot identify a case on its
+// own. CrimeNo is one-per-case and embeds station, year and FIR serial.
 const caseStation = {};
 const crimeCase = {};
 for (const r of all("SELECT CaseMasterID id, PoliceStationID st, CrimeNo crime FROM CaseMaster")) {

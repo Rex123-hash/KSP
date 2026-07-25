@@ -15,7 +15,8 @@ export const STATUS = {
   4: { label: "Closed", slug: "closed" },
 };
 
-// CaseNo is "YYYY#####" (year + 5-digit serial); present it as "serial/year".
+// CaseNo is "YYYY#####" (year + 5-digit serial drawn from the station's FIR
+// register for that year); present it the way an officer writes it: "serial/year".
 export function firNo(caseNo) {
   if (!caseNo || caseNo.length < 5) return caseNo || "";
   const year = caseNo.slice(0, 4);
