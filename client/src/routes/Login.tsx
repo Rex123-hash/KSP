@@ -1,19 +1,25 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Icon, type IconName } from "../components/Icon";
 import { Emblem } from "../components/Emblem";
+import { loadCatalystSdk, useAuth } from "../auth";
 import building from "../assets/login-building.webp";
 import stateMap from "../assets/login-map.webp";
 import "./Login.css";
 
 /**
- * Officer login.
+ * Officer login — real Catalyst Authentication.
  *
- * Auth is not wired: submitting navigates to the Command View so the flow can be
- * demoed. Real authentication is Catalyst Authentication, and the signed-in user
- * must resolve to an Employee row (UnitID + RankID) — that record is what scopes
- * every subsequent read, server-side. See architecture.md §6.
+ * The credential fields are Catalyst's embedded sign-in iframe, styled by
+ * public/catalyst-login.css to match our tokens. We deliberately do not own a
+ * password field: Catalyst holds the credential, and this app never sees it.
+ *
+ * On success Catalyst sets the session cookie and returns to the app; /session
+ * then resolves the officer to a UnitID + RankID, which scopes everything
+ * server-side. See architecture.md §6.
  */
+
+const LOGIN_ELEMENT_ID = "catalyst-login";
 
 const FEATURES: { icon: IconName; title: string; body: string }[] = [
   {
@@ -40,12 +46,34 @@ const FEATURES: { icon: IconName; title: string; body: string }[] = [
 
 export function Login() {
   const navigate = useNavigate();
-  const [showPassword, setShowPassword] = useState(false);
+  const { loading, authenticated } = useAuth();
+  const [sdk, setSdk] = useState<"loading" | "ready" | "unavailable">("loading");
 
-  function handleSubmit(e: FormEvent) {
-    e.preventDefault();
-    navigate("/");
-  }
+  // Already signed in — don't make them log in again.
+  useEffect(() => {
+    if (!loading && authenticated) navigate("/", { replace: true });
+  }, [loading, authenticated, navigate]);
+
+  // Mount Catalyst's sign-in iframe into the card.
+  useEffect(() => {
+    let live = true;
+    void loadCatalystSdk().then((ok) => {
+      if (!live) return;
+      if (!ok) return setSdk("unavailable");
+      try {
+        window.catalyst?.auth?.signIn?.(LOGIN_ELEMENT_ID, {
+          css_url: `${import.meta.env.BASE_URL}catalyst-login.css`,
+          service_url: `${import.meta.env.BASE_URL}index.html`,
+        });
+        setSdk("ready");
+      } catch {
+        setSdk("unavailable");
+      }
+    });
+    return () => {
+      live = false;
+    };
+  }, []);
 
   return (
     <div className="login">
@@ -103,79 +131,25 @@ export function Login() {
                 Access the Crime Intelligence Platform
               </p>
 
-              <form className="login__form" onSubmit={handleSubmit}>
-                <div className="login__field">
-                  <label htmlFor="employee-id" className="sr-only">
-                    Employee ID
-                  </label>
-                  <span className="login__field-icon">
-                    <Icon name="user" size={17} />
-                  </span>
-                  <input
-                    id="employee-id"
-                    name="employeeId"
-                    type="text"
-                    autoComplete="username"
-                    placeholder="Employee ID"
-                    required
-                  />
+              {sdk === "unavailable" ? (
+                <div className="login__embed-note" role="status">
+                  <Icon name="shield" size={18} />
+                  <p>
+                    Catalyst sign-in is available only on the deployed app. Run the
+                    hosted build to authenticate.
+                  </p>
                 </div>
-
-                <div className="login__field">
-                  <label htmlFor="password" className="sr-only">
-                    Password
-                  </label>
-                  <span className="login__field-icon">
-                    <Icon name="lock" size={17} />
-                  </span>
-                  <input
-                    id="password"
-                    name="password"
-                    type={showPassword ? "text" : "password"}
-                    autoComplete="current-password"
-                    placeholder="Password"
-                    required
-                  />
-                  <button
-                    type="button"
-                    className="login__field-toggle"
-                    onClick={() => setShowPassword((v) => !v)}
-                    aria-label={
-                      showPassword ? "Hide password" : "Show password"
-                    }
-                  >
-                    <Icon name={showPassword ? "eye-off" : "eye"} size={17} />
-                  </button>
-                </div>
-
-                <div className="login__row">
-                  <label className="login__check">
-                    <input type="checkbox" name="remember" />
-                    <span className="login__check-box" aria-hidden="true">
-                      <Icon name="check" size={11} strokeWidth={3} />
-                    </span>
-                    <span>Remember me</span>
-                  </label>
-
-                  <button type="button" className="login__link">
-                    Forgot Password?
-                  </button>
-                </div>
-
-                <button type="submit" className="login__submit">
-                  <span>Login</span>
-                  <Icon name="arrow-right" size={18} strokeWidth={2} />
-                </button>
-
-                <div className="login__or" role="separator">
-                  <span>OR</span>
-                </div>
-
-                <button type="button" className="login__alt">
-                  <Icon name="shield-check" size={17} />
-                  <span>Login with Smart Card</span>
-                </button>
-              </form>
+              ) : (
+                <>
+                  {sdk === "loading" && (
+                    <p className="login__embed-note" role="status">
+                      Loading secure sign-in…
+                    </p>
+                  )}
+                  {/* Catalyst injects its sign-in iframe here. */}
+                  <div id={LOGIN_ELEMENT_ID} className="login__embed" />
+                </>
+              )}
             </div>
 
             <footer className="login__notice">

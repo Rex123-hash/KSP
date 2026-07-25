@@ -13,6 +13,8 @@ const assert = require('node:assert');
 const scope = require('./scope');
 const org = require('./data/org.json');
 const caseStation = require('./data/case-station.json');
+const crimeCase = require('./data/crime-case.json');
+const featured = require('./data/featured.json');
 
 // Fixed points in the seeded org tree (see data/org.json).
 const STATE = 1; // Karnataka State Police
@@ -91,4 +93,39 @@ test('state scope can act on every case; a single station cannot', () => {
 
   assert.ok(stations.every((st) => scope.canActOn(scrb, st)));
   assert.ok(stations.some((st) => !scope.canActOn(si, st)));
+});
+
+test('the featured case resolves to a real, in-tree station', () => {
+  const st = caseStation[String(featured.caseId)];
+  assert.ok(st != null, 'featured case must exist in the case→station map');
+  assert.ok(scope.unitById.has(st), 'featured case station must exist in the org tree');
+});
+
+test('CrimeNo is a unique key: every crime number maps to a known case', () => {
+  const entries = Object.entries(crimeCase);
+  assert.strictEqual(
+    entries.length,
+    Object.keys(caseStation).length,
+    'there should be one crime number per case'
+  );
+  for (const [, caseId] of entries) {
+    assert.ok(
+      Object.prototype.hasOwnProperty.call(caseStation, String(caseId)),
+      `crime number maps to unknown case ${caseId}`
+    );
+  }
+});
+
+test('command position, not rank, decides access to the featured case', () => {
+  // The featured case sits in Bengaluru East. A South-division ASP outranks an
+  // East-division SI, yet must still be refused — this is the property the
+  // whole org-chart model exists to enforce.
+  const station = caseStation[String(featured.caseId)];
+  const eastStationScope = scope.descendants(station);
+  const southDivScope = scope.descendants(SOUTH_DIV);
+  const stateScope = scope.descendants(STATE);
+
+  assert.strictEqual(scope.canActOn(eastStationScope, station), true);
+  assert.strictEqual(scope.canActOn(southDivScope, station), false);
+  assert.strictEqual(scope.canActOn(stateScope, station), true);
 });

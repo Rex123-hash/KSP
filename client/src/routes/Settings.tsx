@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Icon } from "../components/Icon";
 import { Avatar } from "../components/Avatar";
-import { toast, protoToast } from "../components/Toast";
+import { toast, protoToast, denyToast } from "../components/Toast";
+import { ApiError, writeGet, writePut } from "../api";
+import { useAuth } from "../auth";
 import {
   accessRole,
   notifications,
@@ -13,9 +15,59 @@ import {
 } from "../data/settingsMock";
 import "./Settings.css";
 
+type ProfileData = {
+  email: string;
+  displayName: string;
+  phone: string;
+  preferredLanguage: string;
+  rank: string;
+  unitName: string;
+  designation: string | null;
+  role: string;
+};
+
 export function Settings() {
   const [tab, setTab] = useState("Profile");
   const [notif, setNotif] = useState(notifications.map((n) => n.on));
+  const { authenticated, reachable, user, signOut } = useAuth();
+
+  const [me, setMe] = useState<ProfileData | null>(null);
+  const [editing, setEditing] = useState(false);
+  const [form, setForm] = useState({ displayName: "", phone: "", preferredLanguage: "en" });
+  const [saving, setSaving] = useState(false);
+
+  const loadProfile = useCallback(async () => {
+    if (!authenticated) return setMe(null);
+    try {
+      const p = await writeGet<ProfileData>("/profile");
+      setMe(p);
+      setForm({
+        displayName: p.displayName,
+        phone: p.phone,
+        preferredLanguage: p.preferredLanguage,
+      });
+    } catch {
+      setMe(null);
+    }
+  }, [authenticated]);
+
+  useEffect(() => {
+    void loadProfile();
+  }, [loadProfile]);
+
+  async function saveProfile() {
+    setSaving(true);
+    try {
+      await writePut("/profile", form);
+      toast("Profile updated");
+      setEditing(false);
+      await loadProfile();
+    } catch (err) {
+      denyToast(err instanceof ApiError ? err.message : "Could not save your profile.");
+    } finally {
+      setSaving(false);
+    }
+  }
 
   return (
     <>
@@ -42,23 +94,87 @@ export function Settings() {
       </div>
 
       <div className="st-grid">
-        {/* Profile */}
+        {/* Profile — real when signed in, mock data otherwise */}
         <section className="panel st-card">
           <h2 className="cd-card__title">Profile Information</h2>
           <div className="st-profile">
-            <Avatar name={profile.name} size={82} />
-            <dl className="st-profile__facts">
-              <ProfileFact label="Name" value={profile.name} />
-              <ProfileFact label="Designation" value={profile.designation} />
-              <ProfileFact label="Division" value={profile.division} />
-              <ProfileFact label="Employee ID" value={profile.employeeId} />
-              <ProfileFact label="Email" value={profile.email} />
-              <ProfileFact label="Phone" value={profile.phone} />
-            </dl>
+            <Avatar name={me?.displayName ?? profile.name} size={82} />
+            {editing && me ? (
+              <div className="st-form">
+                <label className="st-form__field">
+                  <span>Name</span>
+                  <input
+                    value={form.displayName}
+                    maxLength={255}
+                    onChange={(e) => setForm({ ...form, displayName: e.target.value })}
+                  />
+                </label>
+                <label className="st-form__field">
+                  <span>Phone</span>
+                  <input
+                    value={form.phone}
+                    maxLength={32}
+                    placeholder="+91 …"
+                    onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                  />
+                </label>
+                <label className="st-form__field">
+                  <span>Language</span>
+                  <select
+                    value={form.preferredLanguage}
+                    onChange={(e) => setForm({ ...form, preferredLanguage: e.target.value })}
+                  >
+                    <option value="en">English</option>
+                    <option value="kn">ಕನ್ನಡ (Kannada)</option>
+                  </select>
+                </label>
+              </div>
+            ) : (
+              <dl className="st-profile__facts">
+                <ProfileFact label="Name" value={me?.displayName ?? profile.name} />
+                <ProfileFact
+                  label="Designation"
+                  value={me?.designation ?? profile.designation}
+                />
+                <ProfileFact label="Unit" value={me?.unitName ?? profile.division} />
+                <ProfileFact label="Rank" value={me?.rank ?? profile.employeeId} />
+                <ProfileFact label="Email" value={me?.email ?? profile.email} />
+                <ProfileFact label="Phone" value={me?.phone || (me ? "—" : profile.phone)} />
+              </dl>
+            )}
           </div>
-          <button type="button" className="st-btn st-btn--ghost" onClick={() => protoToast("Read-only deployment — profile can’t be edited")}>
-            <Icon name="file-check" size={15} /> Edit Profile
-          </button>
+
+          {editing ? (
+            <div className="st-btn-row">
+              <button
+                type="button"
+                className="st-btn st-btn--ghost"
+                onClick={() => setEditing(false)}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="st-btn st-btn--solid"
+                disabled={saving}
+                onClick={() => void saveProfile()}
+              >
+                <Icon name="check" size={15} /> {saving ? "Saving…" : "Save Profile"}
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              className="st-btn st-btn--ghost"
+              onClick={() => {
+                if (!reachable) return protoToast("Write service unavailable — profile can’t be edited");
+                if (!authenticated) return protoToast("Sign in to edit your profile");
+                setEditing(true);
+              }}
+            >
+              <Icon name="file-check" size={15} /> Edit Profile
+            </button>
+          )}
         </section>
 
         {/* Preferences */}
@@ -127,9 +243,26 @@ export function Settings() {
           <div className="st-access">
             <span className="st-access__icon"><Icon name="hierarchy" size={20} /></span>
             <dl className="st-access__facts">
-              <div><dt>Role</dt><dd>{accessRole.role}</dd></div>
-              <div><dt>Access Level</dt><dd><span className="st-access__badge">{accessRole.accessLevel}</span></dd></div>
-              <div><dt>Scope</dt><dd>{accessRole.scope}</dd></div>
+              <div>
+                <dt>Role</dt>
+                <dd>{user ? `${user.rank} · ${user.role}` : accessRole.role}</dd>
+              </div>
+              <div>
+                <dt>Access Level</dt>
+                <dd>
+                  <span className="st-access__badge">
+                    {user ? (user.level ?? "Unit") : accessRole.accessLevel}
+                  </span>
+                </dd>
+              </div>
+              <div>
+                <dt>Scope</dt>
+                <dd>
+                  {user
+                    ? `${user.scopeLabel} — ${user.scopeSize} unit${user.scopeSize === 1 ? "" : "s"}`
+                    : accessRole.scope}
+                </dd>
+              </div>
             </dl>
           </div>
           <p className="st-perms__head">Permissions ({permissions.length})</p>
@@ -142,15 +275,37 @@ export function Settings() {
           </div>
         </section>
 
-        {/* Change password */}
+        {/* Account — credentials belong to Catalyst Authentication, not to us.
+            This app has no password field by design: it never sees the secret. */}
         <section className="panel st-card">
-          <h2 className="cd-card__title">Change Password</h2>
-          <PasswordField label="Current Password" placeholder="Enter current password" />
-          <PasswordField label="New Password" placeholder="Enter new password" />
-          <PasswordField label="Confirm New Password" placeholder="Confirm new password" />
-          <button type="button" className="st-btn st-btn--solid" onClick={() => protoToast("Read-only deployment — password can’t be changed")}>
-            <Icon name="lock" size={15} /> Update Password
-          </button>
+          <h2 className="cd-card__title">Account &amp; Security</h2>
+          <p className="st-account__note">
+            <Icon name="shield-check" size={15} />
+            <span>
+              Your credentials are held by Catalyst Authentication. This platform never stores or
+              handles your password — changes go through Catalyst’s own secure reset flow.
+            </span>
+          </p>
+          <div className="st-btn-row">
+            <button
+              type="button"
+              className="st-btn st-btn--ghost"
+              onClick={() => {
+                if (!authenticated) return protoToast("Sign in to manage your account");
+                toast("Use “Forgot Password” on the sign-in screen to reset your password", {
+                  icon: "lock",
+                  tone: "info",
+                });
+              }}
+            >
+              <Icon name="lock" size={15} /> Change Password
+            </button>
+            {authenticated && (
+              <button type="button" className="st-btn st-btn--solid" onClick={signOut}>
+                <Icon name="external" size={15} /> Sign Out
+              </button>
+            )}
+          </div>
         </section>
 
         {/* System info */}
@@ -184,21 +339,6 @@ function ProfileFact({ label, value }: { label: string; value: string }) {
     <div className="st-profile__fact">
       <dt>{label}</dt>
       <dd>{value}</dd>
-    </div>
-  );
-}
-
-function PasswordField({ label, placeholder }: { label: string; placeholder: string }) {
-  const [show, setShow] = useState(false);
-  return (
-    <div className="st-field">
-      <label className="st-field__label">{label}</label>
-      <div className="st-field__box">
-        <input type={show ? "text" : "password"} placeholder={placeholder} autoComplete="off" />
-        <button type="button" onClick={() => setShow((v) => !v)} aria-label={show ? "Hide" : "Show"}>
-          <Icon name={show ? "eye-off" : "eye"} size={16} />
-        </button>
-      </div>
     </div>
   );
 }

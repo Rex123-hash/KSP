@@ -1,18 +1,29 @@
+import { useNavigate } from "react-router-dom";
 import { Icon } from "./Icon";
 import { Emblem } from "./Emblem";
 import { toast, protoToast } from "./Toast";
 import { useMeta } from "../meta";
+import { useAuth } from "../auth";
 import "./TopBar.css";
 
 /**
  * The breadcrumb is not decoration — it renders the Unit.ParentUnit chain and
  * is the primary way an officer moves down their command tree. See
  * architecture.md §6.
+ *
+ * When a real session exists, identity and scope come from it (resolved
+ * server-side). Signed out, we fall back to the read API's officer so the shell
+ * still renders.
  */
 
 export function TopBar() {
   const { officer } = useMeta();
-  const trail = officer.breadcrumb;
+  const navigate = useNavigate();
+  const { authenticated, user } = useAuth();
+
+  const name = user?.name ?? officer.name;
+  const rank = user?.rank ?? officer.rank;
+  const trail = user?.breadcrumb?.length ? user.breadcrumb : officer.breadcrumb;
 
   return (
     <header className="topbar">
@@ -32,7 +43,13 @@ export function TopBar() {
                 <button
                   type="button"
                   className="topbar__crumb"
-                  onClick={() => protoToast(`Role-scoped sign-in isn’t enabled in this preview`)}
+                  onClick={() =>
+                    protoToast(
+                      authenticated
+                        ? `Your command scope is fixed to ${user?.scopeLabel ?? "your unit"}`
+                        : "Sign in to browse your command scope"
+                    )
+                  }
                 >
                   {node}
                 </button>
@@ -65,11 +82,14 @@ export function TopBar() {
         <button
           type="button"
           className="topbar__user"
-          onClick={() => protoToast("Sign-in isn’t enabled in this preview")}
+          title={authenticated ? "Signed in — open settings" : "Sign in"}
+          onClick={() => navigate(authenticated ? "/settings" : "/login")}
         >
           <span className="topbar__user-text">
-            <span className="topbar__user-name">{officer.name}</span>
-            <span className="topbar__user-rank">{officer.rank}</span>
+            <span className="topbar__user-name">{name}</span>
+            <span className="topbar__user-rank">
+              {authenticated ? rank : "Not signed in"}
+            </span>
           </span>
           <Emblem size={34} medallion />
           <Icon name="chevron-down" size={15} strokeWidth={2} />

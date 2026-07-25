@@ -1,0 +1,110 @@
+.at-note {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 18px;
+  font-size: var(--text-small);
+  color: var(--ink-secondary);
+  background: var(--surface-card);
+  border: 1px dashed var(--line-hairline);
+  border-radius: var(--radius-md);
+}
+
+.at-note svg {
+  flex: none;
+  color: var(--brand-green-600);
+}
+
+.at-panel {
+  padding: 22px 24px;
+}
+
+.at-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.at-title {
+  margin: 0;
+  font-size: var(--text-title);
+  font-weight: 650;
+  color: var(--ink-primary);
+}
+
+.at-count {
+  margin-left: 12px;
+  font-size: var(--text-label);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-secondary);
+}
+
+.at-denials {
+  color: var(--status-critical);
+}
+
+.at-empty {
+  padding: 20px 0 6px;
+  font-size: var(--text-small);
+  color: var(--ink-secondary);
+}
+
+/* The table is wide; let it scroll inside the panel rather than the page. */
+.at-scroll {
+  overflow-x: auto;
+}
+
+.at-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-small);
+  white-space: nowrap;
+}
+
+.at-table th {
+  padding: 10px 14px 10px 0;
+  font-size: var(--text-label);
+  font-weight: 650;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--ink-secondary);
+  text-align: left;
+  border-bottom: 1px solid var(--line-strong);
+}
+
+.at-table td {
+  padding: 12px 14px 12px 0;
+  color: var(--ink-primary);
+  border-bottom: 1px solid var(--line-hairline);
+}
+
+.at-table tr.is-deny td {
+  background: var(--status-critical-bg);
+}
+
+.at-detail {
+  max-width: 380px;
+  white-space: normal;
+  color: var(--ink-secondary);
+}
+
+.at-pill {
+  display: inline-block;
+  padding: 3px 10px;
+  font-size: var(--text-label);
+  font-weight: 650;
+  border-radius: 999px;
+}
+
+.at-pill.is-allow {
+  color: var(--brand-green-800);
+  background: var(--brand-green-050);
+}
+
+.at-pill.is-deny {
+  color: var(--status-critical);
+  background: var(--status-critical-bg);
+}

@@ -317,3 +317,175 @@
   color: var(--status-warning);
   background: var(--status-warning-bg);
 }
+
+/* --- Write layer: scope notice, composer, case-file timeline --------------- */
+
+.cd-action.is-primary {
+  color: var(--ink-on-inverse);
+  background: var(--brand-green-800);
+  border-color: var(--brand-green-800);
+}
+
+.cd-action.is-primary:hover {
+  background: var(--brand-green-900);
+  border-color: var(--brand-green-900);
+  color: var(--ink-on-inverse);
+}
+
+.cd-action:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* Says plainly that this case is outside the officer's command scope. */
+.cd-scope-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 18px;
+  padding: 12px 16px;
+  font-size: var(--text-small);
+  line-height: 1.5;
+  color: var(--ink-secondary);
+  background: var(--status-critical-bg);
+  border-left: 3px solid var(--status-critical);
+  border-radius: var(--radius-md);
+}
+
+.cd-scope-note svg {
+  flex: none;
+  margin-top: 1px;
+  color: var(--status-critical);
+}
+
+.cd-file {
+  margin-bottom: 20px;
+}
+
+.cd-file__count {
+  margin-left: 10px;
+  font-size: var(--text-label);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-secondary);
+}
+
+.cd-file__empty {
+  padding: 18px 0 4px;
+  font-size: var(--text-small);
+  color: var(--ink-secondary);
+}
+
+.cd-composer {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 16px 0 20px;
+  padding: 14px;
+  background: var(--brand-green-050);
+  border: 1px solid var(--line-hairline);
+  border-radius: var(--radius-md);
+}
+
+.cd-composer__input,
+.cd-composer__select {
+  width: 100%;
+  padding: 10px 12px;
+  font: inherit;
+  font-size: var(--text-body);
+  color: var(--ink-primary);
+  background: var(--surface-card);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm, 8px);
+  resize: vertical;
+}
+
+.cd-composer__input:focus,
+.cd-composer__select:focus {
+  outline: none;
+  border-color: var(--brand-green-500);
+}
+
+.cd-composer__row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.cd-composer__row .cd-action {
+  padding: 8px 16px;
+}
+
+.cd-composer__label {
+  font-size: var(--text-small);
+  font-weight: 600;
+  color: var(--ink-secondary);
+}
+
+.cd-composer__count {
+  margin-right: auto;
+  font-size: var(--text-label);
+  color: var(--ink-secondary);
+}
+
+.cd-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cd-timeline__item {
+  display: flex;
+  gap: 12px;
+  padding: 12px 0;
+  border-top: 1px solid var(--line-hairline);
+}
+
+.cd-timeline__item:first-child {
+  border-top: 0;
+}
+
+.cd-timeline__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 30px;
+  height: 30px;
+  color: var(--brand-green-700);
+  background: var(--brand-green-050);
+  border-radius: 50%;
+}
+
+.cd-timeline__item.is-status .cd-timeline__icon {
+  color: var(--brand-gold-600, #a8871f);
+  background: rgba(201, 162, 39, 0.12);
+}
+
+.cd-timeline__body {
+  min-width: 0;
+}
+
+.cd-timeline__head {
+  margin: 0 0 2px;
+  font-size: var(--text-body);
+  color: var(--ink-primary);
+}
+
+.cd-timeline__text {
+  margin: 0;
+  font-size: var(--text-body);
+  line-height: 1.5;
+  color: var(--ink-primary);
+  overflow-wrap: anywhere;
+}
+
+.cd-timeline__meta {
+  margin: 4px 0 0;
+  font-size: var(--text-label);
+  color: var(--ink-secondary);
+}

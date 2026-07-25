@@ -489,3 +489,38 @@
     display: none;
   }
 }
+
+/* --- Catalyst embedded sign-in ------------------------------------------
+   The credential fields are Catalyst's iframe, not ours. We control the frame
+   it sits in; public/catalyst-login.css styles the inside to match our tokens. */
+.login__embed {
+  margin-top: 28px;
+  min-height: 300px;
+  text-align: left;
+}
+
+.login__embed iframe {
+  width: 100%;
+  border: 0;
+}
+
+.login__embed-note {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 28px;
+  padding: 18px 20px;
+  font-size: var(--text-small);
+  line-height: 1.5;
+  color: var(--ink-secondary);
+  text-align: left;
+  background: var(--surface-sunken, rgba(0, 0, 0, 0.03));
+  border: 1px dashed var(--line-hairline);
+  border-radius: var(--radius-md);
+}
+
+.login__embed-note svg {
+  flex: none;
+  color: var(--brand-green-600);
+}

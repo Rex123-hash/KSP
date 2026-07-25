@@ -41,6 +41,14 @@
   color: var(--brand-green-600);
 }
 
+/* A refused action — the access control working, not a system fault. */
+.toast.is-warn {
+  border-left-color: var(--status-critical);
+}
+.toast.is-warn svg {
+  color: var(--status-critical);
+}
+
 @keyframes toast-in {
   from {
     opacity: 0;

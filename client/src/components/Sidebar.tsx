@@ -22,6 +22,7 @@ const NAV: { to: string; label: string; icon: IconName }[] = [
 const NAV_SECONDARY: { to: string; label: string; icon: IconName }[] = [
   { to: "/reports", label: "Reports", icon: "chart-up" },
   { to: "/downloads", label: "Downloads", icon: "arrow-down" },
+  { to: "/audit", label: "Audit Trail", icon: "shield-check" },
   { to: "/settings", label: "Settings", icon: "settings" },
 ];
 

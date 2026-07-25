@@ -372,3 +372,74 @@
   color: var(--ink-muted);
   border-top: 1px solid var(--line-hairline);
 }
+
+/* --- Write layer: profile form, button rows, account notice --------------- */
+.st-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+}
+
+.st-form__field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.st-form__field > span {
+  font-size: var(--text-label);
+  font-weight: 650;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-secondary);
+}
+
+.st-form__field input,
+.st-form__field select {
+  width: 100%;
+  padding: 10px 12px;
+  font: inherit;
+  font-size: var(--text-body);
+  color: var(--ink-primary);
+  background: var(--surface-card);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm, 8px);
+}
+
+.st-form__field input:focus,
+.st-form__field select:focus {
+  outline: none;
+  border-color: var(--brand-green-500);
+}
+
+.st-btn-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.st-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.st-account__note {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 0 0 16px;
+  padding: 12px 14px;
+  font-size: var(--text-small);
+  line-height: 1.5;
+  color: var(--ink-secondary);
+  background: var(--brand-green-050);
+  border-radius: var(--radius-md);
+}
+
+.st-account__note svg {
+  flex: none;
+  margin-top: 1px;
+  color: var(--brand-green-700);
+}

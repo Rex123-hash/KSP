@@ -42,13 +42,31 @@ const org = {
 await writeFile(join(OUT, "org.json"), JSON.stringify(org));
 
 // ---- case-station.json: CaseMasterID -> PoliceStationID ---------------------
+// ---- crime-case.json:   CrimeNo      -> CaseMasterID ------------------------
+// The read API identifies a case in its payload by CrimeNo, not by primary key,
+// so the function needs to resolve one to the other. CrimeNo is used rather than
+// CaseNo because CaseNo is NOT unique in the generated data (5200 cases share
+// only 261 distinct CaseNo values), while CrimeNo is one-per-case.
 const caseStation = {};
-for (const r of all("SELECT CaseMasterID id, PoliceStationID st FROM CaseMaster")) {
+const crimeCase = {};
+for (const r of all("SELECT CaseMasterID id, PoliceStationID st, CrimeNo crime FROM CaseMaster")) {
   caseStation[r.id] = r.st;
+  if (r.crime != null) crimeCase[String(r.crime)] = r.id;
 }
 await writeFile(join(OUT, "case-station.json"), JSON.stringify(caseStation));
+await writeFile(join(OUT, "crime-case.json"), JSON.stringify(crimeCase));
+
+// The Case Details page always renders the most recent case, exactly as the read
+// API's /api/cases/featured does. Resolving "featured" here keeps the write layer
+// in step without an extra round trip or a change to AppSail.
+const featured = db
+  .prepare("SELECT CaseMasterID id FROM CaseMaster ORDER BY CrimeRegisteredDate DESC LIMIT 1")
+  .get();
+await writeFile(join(OUT, "featured.json"), JSON.stringify({ caseId: featured.id }));
 
 console.log(
   `org.json: ${org.units.length} units, ${org.unitTypes.length} types, ${org.ranks.length} ranks\n` +
-    `case-station.json: ${Object.keys(caseStation).length} cases`
+    `case-station.json: ${Object.keys(caseStation).length} cases\n` +
+    `crime-case.json: ${Object.keys(crimeCase).length} crime numbers\n` +
+    `featured.json: case ${featured.id} (station ${caseStation[featured.id]})`
 );

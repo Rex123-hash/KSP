@@ -23,6 +23,8 @@ const catalyst = require('zcatalyst-sdk-node');
 
 const scope = require('./scope');
 const caseStation = require('./data/case-station.json');
+const crimeCase = require('./data/crime-case.json');
+const featured = require('./data/featured.json');
 
 const app = express();
 app.use(express.json({ limit: '64kb' }));
@@ -50,6 +52,28 @@ function asInt(v) {
 
 /** ZCQL returns [{TableName: {...cols}}]; flatten to the column objects. */
 const rowsOf = (res, table) => (res || []).map((r) => r[table]).filter(Boolean);
+
+/**
+ * Resolve the `:id` path segment to a CaseMasterID. Accepts:
+ *   "featured"  - the most recent case, matching the read API's /cases/featured
+ *   a CaseMasterID
+ *   a CrimeNo   - what the read payload actually exposes per case
+ *
+ * Returns null when it resolves to nothing. Note this only *identifies* a case;
+ * the station always comes from case-station.json, so a caller choosing an
+ * arbitrary id still cannot act outside their own command scope.
+ */
+function resolveCaseId(raw) {
+  if (raw == null) return null;
+  const key = String(raw).trim();
+  if (key === 'featured') return featured.caseId;
+
+  const n = asInt(key);
+  if (n != null && Object.prototype.hasOwnProperty.call(caseStation, String(n))) return n;
+
+  if (Object.prototype.hasOwnProperty.call(crimeCase, key)) return crimeCase[key];
+  return null;
+}
 
 // ---- identity & authorization ----------------------------------------------
 
@@ -146,7 +170,7 @@ async function requireCaseAccess(req, res, { action }) {
     return null;
   }
 
-  const caseId = asInt(req.params.id);
+  const caseId = resolveCaseId(req.params.id);
   const stationId = caseId == null ? null : caseStation[String(caseId)];
 
   if (stationId == null) {
@@ -226,8 +250,8 @@ router.get('/cases/:id/overlay', async (req, res) => {
     const { capp, actor } = await resolveActor(req);
     if (!actor) return res.status(401).json({ error: 'not_authenticated' });
 
-    const caseId = asInt(req.params.id);
-    if (caseId == null) return res.status(400).json({ error: 'bad_case_id' });
+    const caseId = resolveCaseId(req.params.id);
+    if (caseId == null) return res.status(404).json({ error: 'unknown_case' });
 
     const [noteRes, statusRes] = await Promise.all([
       capp.zcql().executeZCQLQuery(

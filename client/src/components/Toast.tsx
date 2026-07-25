@@ -8,13 +8,14 @@ import "./Toast.css";
  * doing nothing. A module-level emitter keeps it dependency-free.
  */
 
-type ToastMsg = { id: number; text: string; icon: IconName; tone: "ok" | "info" };
+type Tone = "ok" | "info" | "warn";
+type ToastMsg = { id: number; text: string; icon: IconName; tone: Tone };
 type Listener = (t: ToastMsg) => void;
 
 let seq = 0;
 const listeners = new Set<Listener>();
 
-export function toast(text: string, opts?: { icon?: IconName; tone?: "ok" | "info" }) {
+export function toast(text: string, opts?: { icon?: IconName; tone?: Tone }) {
   const msg: ToastMsg = {
     id: ++seq,
     text,
@@ -27,6 +28,15 @@ export function toast(text: string, opts?: { icon?: IconName; tone?: "ok" | "inf
 /** Convenience for actions that need a live backend not present in this build. */
 export function protoToast(text: string) {
   toast(text, { icon: "shield", tone: "info" });
+}
+
+/**
+ * A refused or failed action. Used for scope denials, which are not errors in
+ * the system — they are the access control working — so they read as a warning
+ * rather than a failure.
+ */
+export function denyToast(text: string) {
+  toast(text, { icon: "shield", tone: "warn" });
 }
 
 export function Toaster() {
