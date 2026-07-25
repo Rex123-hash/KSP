@@ -21,6 +21,70 @@ import "./Login.css";
 
 const LOGIN_ELEMENT_ID = "catalyst-login";
 
+/**
+ * Brand paint for Catalyst's sign-in iframe.
+ *
+ * This is INJECTED into the iframe rather than passed as `css_url`, and the
+ * distinction matters: `css_url` *replaces* Catalyst's stylesheet, which
+ * previously removed the rules that collapse the form's inactive states (OTP,
+ * TOTP, CAPTCHA, backup codes) and produced a 2,000px wall of fields. Injecting
+ * a <style> element adds to their CSS instead, so their layout is untouched and
+ * we only restate colours.
+ *
+ * Safe because the iframe is served from our own origin (/accounts/p/…/signin),
+ * so same-origin access is permitted. Selectors were read from the live DOM.
+ */
+const IFRAME_BRAND_CSS = `
+  /* Primary action: Zoho blue -> KSP green */
+  #nextbtn, .btn.blue, button.blue, input.blue {
+    background: #0b4229 !important;
+    border-color: #0b4229 !important;
+  }
+  #nextbtn:hover, .btn.blue:hover, button.blue:hover {
+    background: #08341f !important;
+    border-color: #08341f !important;
+  }
+  /* Links pick up the brand green rather than plain grey */
+  a, a.text16 { color: #14543a !important; }
+  a:hover, a.text16:hover { color: #08341f !important; }
+  /* Focus ring to match our own inputs */
+  .textbox:focus, input:focus {
+    border-color: #14543a !important;
+    box-shadow: 0 0 0 3px rgba(20, 84, 58, 0.12) !important;
+  }
+`;
+
+const BRAND_STYLE_ID = "ksp-brand-paint";
+
+/**
+ * Paint the iframe, idempotently. Returns false until the iframe document is
+ * reachable, so the caller can keep retrying — it mounts asynchronously, and
+ * Catalyst reloads it between the email and password steps, which drops any
+ * style we added.
+ */
+function paintSignInFrame(): boolean {
+  const frame = document.querySelector<HTMLIFrameElement>(`#${LOGIN_ELEMENT_ID} iframe`);
+  const doc = frame?.contentDocument;
+  if (!doc?.head) return false;
+
+  if (!doc.getElementById(BRAND_STYLE_ID)) {
+    const style = doc.createElement("style");
+    style.id = BRAND_STYLE_ID;
+    style.textContent = IFRAME_BRAND_CSS;
+    doc.head.appendChild(style);
+  }
+
+  // Belt and braces: also set the primary action inline. Catalyst rebuilds this
+  // button as the form moves between steps, and an inline declaration survives
+  // any stylesheet of theirs that loads after ours.
+  doc.querySelectorAll<HTMLElement>("#nextbtn, .btn.blue").forEach((el) => {
+    el.style.setProperty("background", "#0b4229", "important");
+    el.style.setProperty("border-color", "#0b4229", "important");
+  });
+
+  return true;
+}
+
 const DEMO_PASSWORD = "Ksp@Datathon2026";
 
 /** Three positions in the command tree — the contrast is the demo. */
@@ -59,6 +123,12 @@ export function Login() {
   const [sdk, setSdk] = useState<"loading" | "ready" | "unavailable">("loading");
   const [copied, setCopied] = useState<string | null>(null);
 
+  function copy(value: string) {
+    void navigator.clipboard?.writeText(value);
+    setCopied(value);
+    window.setTimeout(() => setCopied(null), 1500);
+  }
+
   // Already signed in — don't make them log in again.
   useEffect(() => {
     if (!loading && authenticated) navigate("/", { replace: true });
@@ -95,6 +165,15 @@ export function Login() {
       live = false;
     };
   }, []);
+
+  // Keep the iframe painted. Catalyst reloads it between the email and password
+  // steps, so a one-shot injection would be lost on the second screen.
+  useEffect(() => {
+    if (sdk !== "ready") return;
+    paintSignInFrame();
+    const t = window.setInterval(paintSignInFrame, 700);
+    return () => window.clearInterval(t);
+  }, [sdk]);
 
   return (
     <div className="login">
@@ -180,29 +259,40 @@ export function Login() {
                       the command tree, which is what the demo turns on. */}
                   <div className="login__demo">
                     <p className="login__demo-head">
-                      <Icon name="user" size={14} />
-                      Demo accounts — all use password <code>{DEMO_PASSWORD}</code>
+                      <Icon name="user" size={15} />
+                      Demo accounts
                     </p>
+
                     <ul className="login__demo-list">
                       {DEMO_ACCOUNTS.map((a) => (
                         <li key={a.email} className="login__demo-row">
                           <button
                             type="button"
                             className="login__demo-copy"
-                            title="Copy email"
-                            onClick={() => {
-                              void navigator.clipboard?.writeText(a.email);
-                              setCopied(a.email);
-                              window.setTimeout(() => setCopied(null), 1400);
-                            }}
+                            title="Copy email address"
+                            onClick={() => copy(a.email)}
                           >
-                            {copied === a.email ? "Copied" : a.email}
+                            <span className="login__demo-value">{a.email}</span>
+                            <Icon name={copied === a.email ? "check" : "layers"} size={13} />
                           </button>
                           <span className="login__demo-role">{a.role}</span>
                           <span className="login__demo-scope">{a.scope}</span>
                         </li>
                       ))}
                     </ul>
+
+                    <div className="login__demo-pw">
+                      <span className="login__demo-pw-label">Password (all three)</span>
+                      <button
+                        type="button"
+                        className="login__demo-copy is-pw"
+                        title="Copy password"
+                        onClick={() => copy(DEMO_PASSWORD)}
+                      >
+                        <span className="login__demo-value">{DEMO_PASSWORD}</span>
+                        <Icon name={copied === DEMO_PASSWORD ? "check" : "layers"} size={13} />
+                      </button>
+                    </div>
                   </div>
                 </>
               )}

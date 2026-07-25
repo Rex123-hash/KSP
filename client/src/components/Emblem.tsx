@@ -64,7 +64,13 @@ export function Emblem({ size = 40, className, medallion = false }: Props) {
             );
           })}
         </g>
-        <g transform="translate(50 52) scale(0.62) translate(-50 -50)">
+
+        {/* Laurel wreath flanking the shield — the detail that separates a
+            medal from a logo. Leaves are placed along an arc and rotated
+            tangentially so each sits naturally on the curve. */}
+        <Laurel uid={uid} />
+
+        <g transform="translate(50 50) scale(0.56) translate(-50 -50)">
           <BadgeBody uid={uid} />
         </g>
       </svg>
@@ -116,6 +122,60 @@ function Defs({ uid }: { uid: string }) {
         <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
       </linearGradient>
     </defs>
+  );
+}
+
+/**
+ * Laurel wreath for the medallion. Six leaves per side, placed along a circle
+ * and rotated to sit tangent to it, with the branch drawn under them. Mirrored
+ * across the vertical axis so the two sides read as one wreath.
+ */
+function Laurel({ uid }: { uid: string }) {
+  const R = 37;
+  const leafAngles = [100, 115, 130, 145, 160, 175]; // bottom-left → left
+  const leaf = (deg: number, key: string) => {
+    const a = (deg * Math.PI) / 180;
+    const cx = 50 + Math.cos(a) * R;
+    const cy = 50 + Math.sin(a) * R;
+    return (
+      <ellipse
+        key={key}
+        cx={cx}
+        cy={cy}
+        rx="5.2"
+        ry="2.3"
+        fill={`url(#${uid}-gold)`}
+        transform={`rotate(${deg + 90} ${cx} ${cy})`}
+      />
+    );
+  };
+
+  return (
+    <g opacity="0.9">
+      {/* Left branch */}
+      <path
+        d="M31 76 A 37 37 0 0 1 15 46"
+        fill="none"
+        stroke="var(--brand-gold-500)"
+        strokeWidth="1.2"
+        strokeLinecap="round"
+        opacity="0.8"
+      />
+      {leafAngles.map((d) => leaf(d, `l${d}`))}
+
+      {/* Right branch — same geometry mirrored about x = 50 */}
+      <g transform="translate(100 0) scale(-1 1)">
+        <path
+          d="M31 76 A 37 37 0 0 1 15 46"
+          fill="none"
+          stroke="var(--brand-gold-500)"
+          strokeWidth="1.2"
+          strokeLinecap="round"
+          opacity="0.8"
+        />
+        {leafAngles.map((d) => leaf(d, `r${d}`))}
+      </g>
+    </g>
   );
 }
 
