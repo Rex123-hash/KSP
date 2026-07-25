@@ -9,6 +9,15 @@
       content="Crime Intelligence Platform — Karnataka State Police, State Crime Records Bureau"
     />
     <meta name="theme-color" content="#0b4229" />
+    <!--
+      Catalyst serves this file with no Cache-Control header, so browsers cache
+      it heuristically and can pin an old build indefinitely. The JS/CSS are
+      content-hashed and safe to cache hard; only this entry point must stay
+      fresh, or a visitor keeps loading yesterday's bundle.
+    -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
     <title>KSP Crime Intelligence Platform</title>
   </head>
   <body>
