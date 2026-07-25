@@ -52,6 +52,12 @@ const IFRAME_BRAND_CSS = `
     border-color: #14543a !important;
     box-shadow: 0 0 0 3px rgba(20, 84, 58, 0.12) !important;
   }
+  /* Catalyst reserves a fixed 520px floor plus a 40px top margin for a form
+     whose content is ~256px, which forced a scrollbar inside the card. Dropping
+     the floor is safe — min-height only sets a minimum, so the password, OTP and
+     CAPTCHA steps still grow to whatever they need. */
+  .signin_container { min-height: 0 !important; margin-top: 14px !important; }
+  #signin_flow, .signin_box { min-height: 0 !important; }
 `;
 
 const BRAND_STYLE_ID = "ksp-brand-paint";
@@ -178,10 +184,14 @@ export function Login() {
   return (
     <div className="login">
       <div className="login__main">
+        {/* The building sits on the grid, not inside the brand column. That
+            column clips at its own right edge, which left a band of empty panel
+            between the monument and the login card. Out here it reaches the card. */}
+        <img className="login__building" src={building} alt="" aria-hidden="true" />
+
         {/* --- Left: brand --------------------------------------------- */}
         <section className="login__brand">
           <img className="login__map" src={stateMap} alt="" aria-hidden="true" />
-          <img className="login__building" src={building} alt="" aria-hidden="true" />
 
           <header className="login__brand-head">
             <Emblem size={46} />
@@ -224,7 +234,7 @@ export function Login() {
         <section className="login__panel">
           <div className="login__card">
             <div className="login__card-body">
-              <Emblem size={96} medallion className="login__card-emblem" />
+              <Emblem size={72} medallion className="login__card-emblem" />
 
               <h2 className="login__card-title">Officer Login</h2>
               {/* Catalyst's iframe prints its own "Sign in to access …" line, so
@@ -269,10 +279,11 @@ export function Login() {
                             onClick={() => copy(a.email)}
                           >
                             <span className="login__demo-value">{a.email}</span>
-                            <Icon name={copied === a.email ? "check" : "layers"} size={13} />
+                            <Icon name={copied === a.email ? "check" : "layers"} size={12} />
                           </button>
-                          <span className="login__demo-role">{a.role}</span>
-                          <span className="login__demo-scope">{a.scope}</span>
+                          <span className="login__demo-meta">
+                            <strong>{a.role}</strong> · {a.scope}
+                          </span>
                         </li>
                       ))}
                     </ul>
