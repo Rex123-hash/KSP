@@ -62,10 +62,25 @@ That contrast is the demo.
 
 ## 4. Deploy
 
-The read API (AppSail `kspapi`) is **not** touched and does not need redeploying.
+> **Changed 2026-07-25 (later):** the read API **does** now need redeploying. The write
+> layer's code still doesn't touch it, but the database was regenerated (FIR numbering fix
+> + pipeline determinism fix), and AppSail serves a bundled copy of that database. The
+> deployed copy is stale — it currently returns FIR `26/2026` where the regenerated data
+> says `27/2026`.
+>
+> The write layer is not broken by that skew, because Case Details addresses the case as
+> `featured` and both databases agree the most recent case is 1733. But if you skip the
+> AppSail redeploy, **the FIR-uniqueness fix is invisible in the demo** — judges would see
+> the old duplicated numbering. Redeploy it.
 
 ```bash
 cd catalyst-app/functions/kspwrite && npm install
+```
+
+Refresh AppSail's bundled database, then build the client:
+
+```bash
+cp data/generated/ksp.db catalyst-app/appsail/ksp.db
 ```
 
 ```bash
@@ -73,8 +88,17 @@ cd client && npm run build
 ```
 
 ```bash
-cd catalyst-app && npx catalyst deploy --only functions,client
+cd catalyst-app && npx catalyst deploy --only functions,client,appsail
 ```
+
+After deploying, confirm the read API is serving the regenerated data:
+
+```bash
+curl -s https://kspapi-50044156287.development.catalystappsail.in/api/cases/featured
+```
+
+`header.firNo` should read `27/2026` and `header.crimeNo` `100010022202600027`. If it still
+says `26/2026`, the AppSail redeploy did not take.
 
 ## 5. Verify, in this order
 
@@ -99,13 +123,26 @@ cd catalyst-app && npx catalyst deploy --only functions,client
 | Notes save but never appear | `CaseNote` column name mismatch | Column names are case-sensitive; match §5 exactly |
 | Login area blank / "available only on the deployed app" | Web SDK didn't load | Expected on `localhost`; verify on the deployed URL |
 
-## Regenerating the bundled lookups
+## Regenerating after a pipeline rebuild
 
-If the pipeline regenerates the database, the function's lookup files must be rebuilt or the
-case→station mapping goes stale:
+If the pipeline regenerates the database, **four** artifacts derive from it and all must be
+refreshed together, or they will disagree with each other:
 
 ```bash
-node server/export-write-data.mjs
+node server/export-write-data.mjs && node server/export-static.mjs && cp data/generated/ksp.db catalyst-app/appsail/ksp.db && cp -r client/public/api catalyst-app/client/api
+```
+
+That covers the write layer's lookups, the static API snapshot, AppSail's bundled database,
+and the client's copy of the snapshot.
+
+Skipping any one of them is not a cosmetic problem. A stale snapshot alongside fresh lookups
+once produced a `CrimeNo` that still existed but pointed at a *different* case — a note saved
+from that UI would have attached silently to the wrong FIR rather than failing.
+
+Then re-run both suites:
+
+```bash
+cd catalyst-app/functions/kspwrite && npm test
 ```
 
 ## What is deliberately not built
