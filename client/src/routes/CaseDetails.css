@@ -489,3 +489,80 @@
   font-size: var(--text-label);
   color: var(--ink-secondary);
 }
+
+/* --- Tab panels: accused / victim / sections ------------------------------ */
+.cd-people {
+  overflow-x: auto;
+}
+
+.cd-people__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-body);
+}
+
+.cd-people__table th {
+  padding: 10px 14px 10px 0;
+  font-size: var(--text-label);
+  font-weight: 650;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--ink-secondary);
+  text-align: left;
+  border-bottom: 1px solid var(--line-strong);
+  white-space: nowrap;
+}
+
+.cd-people__table td {
+  padding: 12px 14px 12px 0;
+  color: var(--ink-primary);
+  border-bottom: 1px solid var(--line-hairline);
+}
+
+.cd-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cd-sections__row {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line-hairline);
+}
+
+.cd-sections__row:last-child {
+  border-bottom: 0;
+}
+
+.cd-sections__code {
+  flex: none;
+  padding: 5px 11px;
+  font-size: var(--text-small);
+  font-weight: 650;
+  color: var(--brand-green-800);
+  background: var(--brand-green-050);
+  border-radius: var(--radius-sm, 8px);
+}
+
+.cd-sections__body {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.cd-sections__desc {
+  font-size: var(--text-body);
+  color: var(--ink-primary);
+}
+
+.cd-sections__act {
+  font-size: var(--text-label);
+  color: var(--ink-secondary);
+}

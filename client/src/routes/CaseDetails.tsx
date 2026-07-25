@@ -22,6 +22,10 @@ type CaseData = {
   info: { label: string; value: string }[];
   location: { lat: number; lng: number; address: string };
   summary: { icon: IconName; label: string; value: string; tone?: string }[];
+  accused: { serial: string; name: string; age: number; gender: string }[];
+  victims: { name: string; age: number; gender: string }[];
+  sections: { act: string; actName: string; section: string; description: string }[];
+  timeline: { label: string; at: string; icon: IconName }[];
 };
 
 type Note = {
@@ -276,16 +280,161 @@ export function CaseDetails() {
               </div>
 
               <div className="cd-body">
+                {/* The tab bar drives this card. Everything here comes from the
+                    case record; the Timeline additionally merges in write-layer
+                    activity so recorded notes sit alongside the case's own events. */}
                 <section className="panel cd-card">
-                  <h2 className="cd-card__title">Case Information</h2>
-                  <dl className="cd-info">
-                    {data.info.map((row) => (
-                      <div key={row.label} className="cd-info__row">
-                        <dt>{row.label}</dt>
-                        <dd>{row.value}</dd>
-                      </div>
-                    ))}
-                  </dl>
+                  {tab === "info" && (
+                    <>
+                      <h2 className="cd-card__title">Case Information</h2>
+                      <dl className="cd-info">
+                        {data.info.map((row) => (
+                          <div key={row.label} className="cd-info__row">
+                            <dt>{row.label}</dt>
+                            <dd>{row.value}</dd>
+                          </div>
+                        ))}
+                      </dl>
+                    </>
+                  )}
+
+                  {tab === "accused" && (
+                    <>
+                      <h2 className="cd-card__title">Accused ({data.accused.length})</h2>
+                      <PersonTable
+                        rows={data.accused.map((a) => ({
+                          key: a.serial,
+                          lead: a.serial,
+                          name: a.name,
+                          age: a.age,
+                          gender: a.gender,
+                        }))}
+                        leadLabel="No."
+                        empty="No accused recorded on this case."
+                      />
+                    </>
+                  )}
+
+                  {tab === "victim" && (
+                    <>
+                      <h2 className="cd-card__title">Victims ({data.victims.length})</h2>
+                      <PersonTable
+                        rows={data.victims.map((v, i) => ({
+                          key: `${v.name}-${i}`,
+                          lead: `V${i + 1}`,
+                          name: v.name,
+                          age: v.age,
+                          gender: v.gender,
+                        }))}
+                        leadLabel="No."
+                        empty="No victims recorded on this case."
+                      />
+                    </>
+                  )}
+
+                  {tab === "sections" && (
+                    <>
+                      <h2 className="cd-card__title">Acts &amp; Sections ({data.sections.length})</h2>
+                      {data.sections.length === 0 ? (
+                        <p className="cd-file__empty">No sections recorded on this case.</p>
+                      ) : (
+                        <ul className="cd-sections">
+                          {data.sections.map((s) => (
+                            <li key={`${s.act}-${s.section}`} className="cd-sections__row">
+                              <span className="cd-sections__code tabular">
+                                {s.act} {s.section}
+                              </span>
+                              <span className="cd-sections__body">
+                                <span className="cd-sections__desc">{s.description}</span>
+                                <span className="cd-sections__act">{s.actName}</span>
+                              </span>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </>
+                  )}
+
+                  {tab === "documents" && (
+                    <>
+                      <h2 className="cd-card__title">Documents (0)</h2>
+                      <p className="cd-file__empty">
+                        No documents are attached to this case. Document upload isn’t part of
+                        this build.
+                      </p>
+                    </>
+                  )}
+
+                  {tab === "timeline" && (
+                    <>
+                      <h2 className="cd-card__title">Investigation Timeline</h2>
+                      <ol className="cd-timeline">
+                        {data.timeline.map((e) => (
+                          <li key={e.label} className="cd-timeline__item is-status">
+                            <span className="cd-timeline__icon">
+                              <Icon name={e.icon} size={15} />
+                            </span>
+                            <div className="cd-timeline__body">
+                              <p className="cd-timeline__head">{e.label}</p>
+                              <p className="cd-timeline__meta">{e.at}</p>
+                            </div>
+                          </li>
+                        ))}
+                        {overlay?.statusHistory.map((s) => (
+                          <li key={`ts-${s.id}`} className="cd-timeline__item is-status">
+                            <span className="cd-timeline__icon">
+                              <Icon name="file-check" size={15} />
+                            </span>
+                            <div className="cd-timeline__body">
+                              <p className="cd-timeline__head">
+                                Status → <strong>{s.toStatus}</strong>
+                              </p>
+                              <p className="cd-timeline__meta">
+                                {s.authorName} · {when(s.createdAt)}
+                              </p>
+                            </div>
+                          </li>
+                        ))}
+                        {overlay?.notes.map((n) => (
+                          <li key={`tn-${n.id}`} className="cd-timeline__item">
+                            <span className="cd-timeline__icon">
+                              <Icon name="file-text" size={15} />
+                            </span>
+                            <div className="cd-timeline__body">
+                              <p className="cd-timeline__text">{n.text}</p>
+                              <p className="cd-timeline__meta">
+                                {n.authorName} · {when(n.createdAt)}
+                              </p>
+                            </div>
+                          </li>
+                        ))}
+                      </ol>
+                    </>
+                  )}
+
+                  {tab === "location" && (
+                    <>
+                      <h2 className="cd-card__title">Location of Occurrence</h2>
+                      <dl className="cd-info">
+                        <div className="cd-info__row">
+                          <dt>Address</dt>
+                          <dd>{data.location.address}</dd>
+                        </div>
+                        <div className="cd-info__row">
+                          <dt>Police Station</dt>
+                          <dd>{data.header.station}</dd>
+                        </div>
+                        <div className="cd-info__row">
+                          <dt>Latitude</dt>
+                          <dd className="tabular">{data.location.lat.toFixed(5)}</dd>
+                        </div>
+                        <div className="cd-info__row">
+                          <dt>Longitude</dt>
+                          <dd className="tabular">{data.location.lng.toFixed(5)}</dd>
+                        </div>
+                      </dl>
+                    </>
+                  )}
                 </section>
 
                 <section className="panel cd-card">
@@ -509,6 +658,51 @@ export function CaseDetails() {
         }}
       </PageState>
     </>
+  );
+}
+
+type PersonRow = {
+  key: string;
+  lead: string;
+  name: string;
+  age: number;
+  gender: string;
+};
+
+/** Shared table for the Accused and Victim tabs — same columns, same shape. */
+function PersonTable({
+  rows,
+  leadLabel,
+  empty,
+}: {
+  rows: PersonRow[];
+  leadLabel: string;
+  empty: string;
+}) {
+  if (rows.length === 0) return <p className="cd-file__empty">{empty}</p>;
+  return (
+    <div className="cd-people">
+      <table className="cd-people__table">
+        <thead>
+          <tr>
+            <th scope="col">{leadLabel}</th>
+            <th scope="col">Name</th>
+            <th scope="col">Age</th>
+            <th scope="col">Gender</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((r) => (
+            <tr key={r.key}>
+              <td className="tabular">{r.lead}</td>
+              <td>{r.name}</td>
+              <td className="tabular">{r.age ?? "—"}</td>
+              <td>{r.gender}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }
 

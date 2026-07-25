@@ -434,10 +434,25 @@ function buildCase(id) {
   if (!c) return null;
   const comp = one("SELECT * FROM ComplainantDetails WHERE CaseMasterID=?", id);
   const occ = comp ? one("SELECT OccupationName n FROM OccupationMaster WHERE OccupationID=?", comp.OccupationID) : null;
-  const accused = all("SELECT AccusedName, AgeYear, PersonID FROM Accused WHERE CaseMasterID=?", id);
-  const victims = all("SELECT VictimName, AgeYear FROM Victim WHERE CaseMasterID=?", id);
+  const accused = all("SELECT AccusedName, AgeYear, PersonID, GenderID FROM Accused WHERE CaseMasterID=?", id);
+  const victims = all("SELECT VictimName, AgeYear, GenderID FROM Victim WHERE CaseMasterID=?", id);
   const secs = all("SELECT ActID, SectionID FROM ActSectionAssociation WHERE CaseMasterID=?", id);
   const cs = one("SELECT cstype, csdate FROM ChargesheetDetails WHERE CaseMasterID=?", id);
+  const genderOf = (g) => (g === 1 ? "Male" : g === 2 ? "Female" : "—");
+  // ActSectionAssociation.SectionID holds the section CODE ("309"), not a FK,
+  // so the join is on Section.SectionCode within the same Act.
+  const sectionRows = secs.map((s) => {
+    const sec = one(
+      "SELECT SectionDescription d FROM Section WHERE ActCode=? AND SectionCode=?",
+      s.ActID, String(s.SectionID));
+    const act = one("SELECT ActDescription d FROM Act WHERE ActCode=?", s.ActID);
+    return {
+      act: s.ActID,
+      actName: act ? act.d : s.ActID,
+      section: String(s.SectionID),
+      description: sec ? sec.d : `${s.ActID} ${s.SectionID}`,
+    };
+  });
   const regDate = new Date(c.CrimeRegisteredDate.replace(" ", "T"));
   const incDate = new Date(c.IncidentFromDate.replace(" ", "T"));
   const ageDays = Math.round((new Date(span.b.replace(" ", "T")) - incDate) / 86400000);
@@ -471,6 +486,25 @@ function buildCase(id) {
       { label: "Gravity", value: c.gravity },
       { label: "Investigating Officer", value: `Officer #${c.PolicePersonID}` },
       { label: "Brief Facts", value: c.BriefFacts },
+    ],
+    accused: accused.map((a) => ({
+      serial: a.PersonID,
+      name: a.AccusedName,
+      age: a.AgeYear,
+      gender: genderOf(a.GenderID),
+    })),
+    victims: victims.map((v) => ({
+      name: v.VictimName,
+      age: v.AgeYear,
+      gender: genderOf(v.GenderID),
+    })),
+    sections: sectionRows,
+    timeline: [
+      { label: "Incident occurred", at: fmt(c.IncidentFromDate), icon: "alert" },
+      { label: "FIR registered", at: fmt(c.CrimeRegisteredDate), icon: "file-text" },
+      ...(cs && cs.csdate
+        ? [{ label: `Chargesheet filed (type ${cs.cstype})`, at: fmt(cs.csdate), icon: "file-check" }]
+        : []),
     ],
     location: { lat: c.latitude, lng: c.longitude, address: `${c.station.replace(" PS", "")}, Bengaluru` },
     summary: [
