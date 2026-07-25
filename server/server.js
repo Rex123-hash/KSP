@@ -31,11 +31,16 @@ const OFFICER = {
   rank: "ASP",
   scopeLabel: "Bengaluru South Division",
   breadcrumb: ["Karnataka", "Bengaluru City", "Bengaluru South Division"],
-  notifications: 3,
+  notifications: 0, // replaced per-request in /api/meta
 };
 
 app.get("/api/meta", (_req, res) => {
-  res.json({ officer: OFFICER, dateRange: DATE_RANGE });
+  // notifications is the live count of active risk alerts, not a fixed number —
+  // a badge that never changes is worse than no badge.
+  res.json({
+    officer: { ...OFFICER, notifications: alerts().length },
+    dateRange: DATE_RANGE,
+  });
 });
 
 // ---- KPIs -------------------------------------------------------------------

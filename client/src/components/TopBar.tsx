@@ -65,11 +65,26 @@ export function TopBar() {
       </nav>
 
       <div className="topbar__actions">
+        {/* Live count of active risk alerts, and it takes you to them. */}
         <button
           type="button"
           className="topbar__icon-btn"
-          aria-label={`Notifications, ${officer.notifications} unread`}
-          onClick={() => toast(`${officer.notifications} active alerts in your command`, { icon: "bell", tone: "info" })}
+          aria-label={
+            officer.notifications > 0
+              ? `${officer.notifications} active alerts — open Trends & Alerts`
+              : "No active alerts"
+          }
+          onClick={() => {
+            if (officer.notifications === 0) {
+              toast("No active risk alerts in your command", { icon: "bell", tone: "info" });
+              return;
+            }
+            toast(
+              `${officer.notifications} zone${officer.notifications === 1 ? "" : "s"} above risk threshold`,
+              { icon: "bell", tone: "info" }
+            );
+            navigate("/trends");
+          }}
         >
           <Icon name="bell" size={19} />
           {officer.notifications > 0 && (
