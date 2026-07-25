@@ -140,3 +140,8 @@
   text-decoration: underline;
   text-underline-offset: 2px;
 }
+
+.sidebar__scope-count {
+  color: var(--ink-secondary);
+  font-weight: 500;
+}

@@ -200,6 +200,7 @@ app.get("/api/map", (_req, res) => {
   res.json({
     insight: {
       zone: top.zone.replace(" PS", " Zone"),
+      zoneKey: top.zone,
       intensity: top.riskLevel === "High" ? "High Intensity" : top.riskLevel === "Medium" ? "Medium Intensity" : "Low Intensity",
       delta: `${top.riskPct}%`,
       peakTime: "8 PM – 2 AM",
@@ -515,6 +516,70 @@ function buildCase(id) {
     ],
   };
 }
+
+// ---- Zone detail (the map's "View Zone Details" drilldown) ------------------
+// ZoneStat keys on the unit's name, so the station is resolved by name here.
+function hourLabel(h) {
+  if (h == null) return "—";
+  const ampm = h < 12 ? "AM" : "PM";
+  const hh = h % 12 === 0 ? 12 : h % 12;
+  return `${hh} ${ampm}`;
+}
+
+app.get("/api/zones/:zone", (req, res) => {
+  const name = String(req.params.zone || "");
+  const unit = one("SELECT UnitID id, UnitName name FROM Unit WHERE UnitName=?", name);
+  const stat = one("SELECT * FROM ZoneStat WHERE zone=?", name);
+  if (!unit || !stat) return res.status(404).json({ error: "unknown_zone" });
+
+  const heads = all(
+    `SELECT csh.CrimeHeadName label, COUNT(*) c
+     FROM CaseMaster cm JOIN CrimeSubHead csh ON csh.CrimeSubHeadID = cm.CrimeMinorHeadID
+     WHERE cm.PoliceStationID = ?
+     GROUP BY csh.CrimeHeadName ORDER BY c DESC LIMIT 6`, unit.id);
+  const headTotal = heads.reduce((s, h) => s + h.c, 0) || 1;
+
+  const peakRow = one(
+    `SELECT CAST(strftime('%H', IncidentFromDate) AS INT) h, COUNT(*) c
+     FROM CaseMaster WHERE PoliceStationID = ? GROUP BY h ORDER BY c DESC LIMIT 1`, unit.id);
+
+  const recent = all(
+    `SELECT cm.CaseNo, csh.CrimeHeadName crime, cm.CrimeRegisteredDate reg, cm.CaseStatusID st
+     FROM CaseMaster cm JOIN CrimeSubHead csh ON csh.CrimeSubHeadID = cm.CrimeMinorHeadID
+     WHERE cm.PoliceStationID = ? ORDER BY cm.CrimeRegisteredDate DESC LIMIT 6`, unit.id);
+
+  const statusMix = all(
+    `SELECT st.CaseStatusName label, COUNT(*) c
+     FROM CaseMaster cm JOIN CaseStatusMaster st ON st.CaseStatusID = cm.CaseStatusID
+     WHERE cm.PoliceStationID = ? GROUP BY st.CaseStatusName ORDER BY c DESC`, unit.id);
+
+  res.json({
+    zone: unit.name,
+    zoneLabel: unit.name.replace(" PS", " Zone"),
+    unitId: unit.id,
+    cases: stat.cases,
+    casesLabel: stat.cases.toLocaleString("en-IN"),
+    pct: stat.pct,
+    riskLevel: stat.riskLevel,
+    riskPct: stat.riskPct,
+    peakHour: peakRow ? peakRow.h : null,
+    peakLabel: peakRow ? `${hourLabel(peakRow.h)} – ${hourLabel((peakRow.h + 2) % 24)}` : "—",
+    crimeHeads: heads.map((h) => ({
+      label: h.label,
+      count: h.c,
+      countLabel: h.c.toLocaleString("en-IN"),
+      pct: Math.round((h.c / headTotal) * 1000) / 10,
+    })),
+    statusMix: statusMix.map((s) => ({ label: s.label, count: s.c })),
+    recentFirs: recent.map((r) => ({
+      firNo: firNo(r.CaseNo),
+      crimeHead: r.crime,
+      registeredOn: fmt(r.reg),
+      status: STATUS[r.st].label,
+      statusSlug: STATUS[r.st].slug,
+    })),
+  });
+});
 
 // ---- Reports ----------------------------------------------------------------
 app.get("/api/reports", (_req, res) => {

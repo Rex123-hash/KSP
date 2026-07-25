@@ -3,6 +3,7 @@ import { Icon, type IconName } from "./Icon";
 import { Emblem } from "./Emblem";
 import { protoToast } from "./Toast";
 import { useMeta } from "../meta";
+import { useAuth } from "../auth";
 import "./Sidebar.css";
 
 /**
@@ -28,6 +29,14 @@ const NAV_SECONDARY: { to: string; label: string; icon: IconName }[] = [
 
 export function Sidebar() {
   const { officer } = useMeta();
+  const { authenticated, user } = useAuth();
+
+  // Signed in, the scope panel must reflect the real session — the server
+  // decides it, and showing the fallback officer here while the top bar shows
+  // the actual one would misrepresent who can do what.
+  const scopeLabel = user?.scopeLabel ?? officer.scopeLabel;
+  const scopeRank = authenticated ? user?.rank ?? officer.rank : "Not signed in";
+  const scopeUnits = user?.scopeSize ?? 0;
   return (
     <aside className="sidebar">
       <div className="sidebar__brand">
@@ -80,12 +89,26 @@ export function Sidebar() {
           </span>
           <span className="eyebrow sidebar__scope-eyebrow">Current Scope</span>
         </div>
-        <p className="sidebar__scope-unit">{officer.scopeLabel}</p>
-        <p className="sidebar__scope-rank">{officer.rank}</p>
+        <p className="sidebar__scope-unit">{scopeLabel}</p>
+        <p className="sidebar__scope-rank">
+          {scopeRank}
+          {authenticated && scopeUnits > 0 && (
+            <span className="sidebar__scope-count">
+              {" "}
+              · {scopeUnits} unit{scopeUnits === 1 ? "" : "s"}
+            </span>
+          )}
+        </p>
         <button
           type="button"
           className="sidebar__scope-change"
-          onClick={() => protoToast("Role-scoped sign-in isn’t enabled in this preview")}
+          onClick={() =>
+            protoToast(
+              authenticated
+                ? `Your scope is fixed to ${scopeLabel} by your posting — sign in as another officer to change it`
+                : "Sign in to see your command scope"
+            )
+          }
         >
           Change Scope
           <Icon name="chevron-right" size={13} strokeWidth={2} />

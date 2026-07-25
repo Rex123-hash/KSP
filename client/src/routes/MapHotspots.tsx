@@ -5,7 +5,7 @@ import { HotspotMap } from "../components/HotspotMap";
 import { Donut } from "../components/Donut";
 import { PageState } from "../components/PageState";
 import { protoToast } from "../components/Toast";
-import { useApi } from "../api";
+import { apiGet, useApi } from "../api";
 import { useMeta } from "../meta";
 import { type CrimeHeadSlice } from "../data/mapMock";
 import "./MapHotspots.css";
@@ -29,6 +29,7 @@ function hourLabel(h: number) {
 type MapData = {
   insight: {
     zone: string;
+    zoneKey: string;
     intensity: string;
     delta: string;
     peakTime: string;
@@ -37,6 +38,27 @@ type MapData = {
   };
   crimeHeads: CrimeHeadSlice[];
   totalCases: string;
+};
+
+/** Per-station drilldown behind "View Zone Details". */
+type ZoneDetail = {
+  zone: string;
+  zoneLabel: string;
+  unitId: number;
+  casesLabel: string;
+  pct: number;
+  riskLevel: string;
+  riskPct: number;
+  peakLabel: string;
+  crimeHeads: { label: string; countLabel: string; pct: number }[];
+  statusMix: { label: string; count: number }[];
+  recentFirs: {
+    firNo: string;
+    crimeHead: string;
+    registeredOn: string;
+    status: string;
+    statusSlug: string;
+  }[];
 };
 
 const HOURS = ["12 AM", "4 AM", "8 AM", "12 PM", "4 PM", "8 PM", "11 PM"];
@@ -48,6 +70,23 @@ export function MapHotspots() {
   const playRef = useRef<number | null>(null);
   const state = useApi<MapData>("/map");
   const { dateRange } = useMeta();
+
+  // Zone drilldown
+  const [zone, setZone] = useState<ZoneDetail | null>(null);
+  const [zoneLoading, setZoneLoading] = useState(false);
+  const [zoneError, setZoneError] = useState<string | null>(null);
+
+  async function openZone(zoneKey: string) {
+    setZoneLoading(true);
+    setZoneError(null);
+    try {
+      setZone(await apiGet<ZoneDetail>(`/zones/${encodeURIComponent(zoneKey)}`));
+    } catch {
+      setZoneError("Could not load this zone.");
+    } finally {
+      setZoneLoading(false);
+    }
+  }
 
   // Play animation: cycle the hour 0→23 while playing.
   useEffect(() => {
@@ -199,11 +238,13 @@ export function MapHotspots() {
                     <button
                       type="button"
                       className="insight__cta"
-                      onClick={() => protoToast("Zone drilldown isn’t in this build yet")}
+                      disabled={zoneLoading}
+                      onClick={() => void openZone(data.insight.zoneKey ?? data.insight.zone)}
                     >
-                      View Zone Details
+                      {zoneLoading ? "Loading…" : "View Zone Details"}
                       <Icon name="arrow-right" size={16} strokeWidth={2} />
                     </button>
+                    {zoneError && <p className="insight__error">{zoneError}</p>}
                   </div>
                 </Panel>
 
@@ -231,7 +272,114 @@ export function MapHotspots() {
           </PageState>
         </div>
       </div>
+
+      {zone && <ZoneDetailPanel zone={zone} onClose={() => setZone(null)} />}
     </>
+  );
+}
+
+/**
+ * Zone drilldown. Answers the operational question the map raises but can't
+ * answer on its own: within this station, what is actually happening, when, and
+ * where do the cases stand.
+ */
+function ZoneDetailPanel({ zone, onClose }: { zone: ZoneDetail; onClose: () => void }) {
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  const statusTotal = zone.statusMix.reduce((s, x) => s + x.count, 0) || 1;
+
+  return (
+    <div className="zonedlg" role="dialog" aria-modal="true" aria-label={`${zone.zoneLabel} details`}>
+      <button type="button" className="zonedlg__scrim" aria-label="Close" onClick={onClose} />
+      <div className="zonedlg__panel">
+        <header className="zonedlg__head">
+          <div>
+            <p className="zonedlg__eyebrow">Zone Drilldown</p>
+            <h2 className="zonedlg__title">{zone.zoneLabel}</h2>
+          </div>
+          <button type="button" className="zonedlg__close" onClick={onClose} aria-label="Close">
+            <Icon name="minus" size={18} strokeWidth={2.4} />
+          </button>
+        </header>
+
+        <div className="zonedlg__stats">
+          <ZoneStat label="Total Cases" value={zone.casesLabel} />
+          <ZoneStat label="Share of State" value={`${zone.pct}%`} />
+          <ZoneStat label="Risk" value={`${zone.riskLevel} · ${zone.riskPct}%`} />
+          <ZoneStat label="Peak Window" value={zone.peakLabel} />
+        </div>
+
+        <section className="zonedlg__section">
+          <h3 className="zonedlg__subtitle">Crime Heads in this Zone</h3>
+          <ul className="zonedlg__bars">
+            {zone.crimeHeads.map((h) => (
+              <li key={h.label} className="zonedlg__bar">
+                <span className="zonedlg__bar-label">{h.label}</span>
+                <span className="zonedlg__bar-track">
+                  <span className="zonedlg__bar-fill" style={{ width: `${h.pct}%` }} />
+                </span>
+                <span className="zonedlg__bar-val tabular">
+                  {h.countLabel} · {h.pct}%
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        <section className="zonedlg__section">
+          <h3 className="zonedlg__subtitle">Investigation Status</h3>
+          <ul className="zonedlg__status">
+            {zone.statusMix.map((s) => (
+              <li key={s.label} className="zonedlg__status-row">
+                <span className="zonedlg__status-label">{s.label}</span>
+                <span className="zonedlg__status-val tabular">
+                  {s.count} ({Math.round((s.count / statusTotal) * 100)}%)
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        <section className="zonedlg__section">
+          <h3 className="zonedlg__subtitle">Recent FIRs</h3>
+          <table className="zonedlg__table">
+            <thead>
+              <tr>
+                <th scope="col">FIR No.</th>
+                <th scope="col">Crime Head</th>
+                <th scope="col">Registered</th>
+                <th scope="col">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {zone.recentFirs.map((f) => (
+                <tr key={f.firNo + f.registeredOn}>
+                  <td className="tabular">{f.firNo}</td>
+                  <td>{f.crimeHead}</td>
+                  <td className="tabular">{f.registeredOn}</td>
+                  <td>
+                    <span className={`pill is-${f.statusSlug}`}>{f.status}</span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </section>
+      </div>
+    </div>
+  );
+}
+
+function ZoneStat({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="zonedlg__stat">
+      <span className="zonedlg__stat-label">{label}</span>
+      <span className="zonedlg__stat-value">{value}</span>
+    </div>
   );
 }
 

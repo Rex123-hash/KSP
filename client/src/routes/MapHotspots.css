@@ -331,3 +331,222 @@
   min-width: 52px;
   text-align: right;
 }
+
+/* --- Zone drilldown dialog ------------------------------------------------ */
+.insight__error {
+  margin: 8px 0 0;
+  font-size: var(--text-small);
+  color: var(--status-critical);
+}
+
+.zonedlg {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.zonedlg__scrim {
+  position: absolute;
+  inset: 0;
+  background: rgba(11, 26, 20, 0.45);
+  border: 0;
+  cursor: pointer;
+}
+
+.zonedlg__panel {
+  position: relative;
+  width: min(780px, 100%);
+  max-height: 88vh;
+  overflow-y: auto;
+  padding: 26px 30px 30px;
+  background: var(--surface-card);
+  border-radius: var(--radius-lg, 14px);
+  box-shadow: var(--shadow-lg);
+}
+
+.zonedlg__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.zonedlg__eyebrow {
+  margin: 0 0 4px;
+  font-size: var(--text-label);
+  font-weight: 650;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-secondary);
+}
+
+.zonedlg__title {
+  margin: 0;
+  font-size: var(--text-display, 28px);
+  font-weight: 650;
+  color: var(--ink-primary);
+}
+
+.zonedlg__close {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  color: var(--ink-secondary);
+  background: var(--brand-green-050);
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.zonedlg__close:hover {
+  color: var(--ink-primary);
+}
+
+.zonedlg__stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.zonedlg__stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 14px;
+  background: var(--brand-green-050);
+  border-radius: var(--radius-md);
+}
+
+.zonedlg__stat-label {
+  font-size: var(--text-label);
+  font-weight: 650;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-secondary);
+}
+
+.zonedlg__stat-value {
+  font-size: var(--text-title);
+  font-weight: 650;
+  color: var(--brand-green-900);
+}
+
+.zonedlg__section {
+  margin-bottom: 24px;
+}
+
+.zonedlg__subtitle {
+  margin: 0 0 12px;
+  font-size: var(--text-body);
+  font-weight: 650;
+  color: var(--ink-primary);
+}
+
+.zonedlg__bars {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.zonedlg__bar {
+  display: grid;
+  grid-template-columns: 150px 1fr 110px;
+  align-items: center;
+  gap: 12px;
+  font-size: var(--text-small);
+}
+
+.zonedlg__bar-label {
+  color: var(--ink-primary);
+}
+
+.zonedlg__bar-track {
+  height: 8px;
+  background: var(--line-grid, rgba(0, 0, 0, 0.07));
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.zonedlg__bar-fill {
+  display: block;
+  height: 100%;
+  background: var(--brand-green-700);
+  border-radius: 999px;
+}
+
+.zonedlg__bar-val {
+  text-align: right;
+  color: var(--ink-secondary);
+}
+
+.zonedlg__status {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.zonedlg__status-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  font-size: var(--text-small);
+  border-bottom: 1px solid var(--line-hairline);
+}
+
+.zonedlg__status-label {
+  color: var(--ink-primary);
+}
+
+.zonedlg__status-val {
+  color: var(--ink-secondary);
+}
+
+.zonedlg__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-small);
+}
+
+.zonedlg__table th {
+  padding: 8px 12px 8px 0;
+  font-size: var(--text-label);
+  font-weight: 650;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--ink-secondary);
+  text-align: left;
+  border-bottom: 1px solid var(--line-strong);
+  white-space: nowrap;
+}
+
+.zonedlg__table td {
+  padding: 10px 12px 10px 0;
+  color: var(--ink-primary);
+  border-bottom: 1px solid var(--line-hairline);
+  white-space: nowrap;
+}
+
+@media (max-width: 620px) {
+  .zonedlg__bar {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+  .zonedlg__bar-val {
+    text-align: left;
+  }
+}
