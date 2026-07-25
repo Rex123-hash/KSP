@@ -80,11 +80,17 @@
 }
 
 
+/* Stacking order on the login grid, lowest first:
+     1  .login__panel background
+     2  .login__building   (paints over the panel bg so it can reach the card)
+     3  brand text + feature cards
+     4  .login__card
+   The building is decoration; nothing readable may sit under it. */
 .login__brand-head,
 .login__hero,
 .login__features {
   position: relative;
-  z-index: 1;
+  z-index: 3;
 }
 
 .login__brand-head {
@@ -199,7 +205,7 @@
 
 .login__card {
   position: relative;
-  z-index: 3; /* above the building, which paints over the panel background */
+  z-index: 4; /* above the building and the brand content */
   width: 100%;
   max-width: 468px;
   background: var(--surface-card);
