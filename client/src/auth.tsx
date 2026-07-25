@@ -118,21 +118,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [refresh]);
 
   const signOut = useCallback(() => {
-    const target = `${window.location.origin}${import.meta.env.BASE_URL}index.html`;
-    const sdk = window.catalyst;
-    if (sdk?.auth?.signOut) {
-      sdk.auth.signOut(target);
-      return;
-    }
-    // No SDK (dev): just drop local state and return to the login screen.
-    setState({
-      loading: false,
-      reachable: false,
-      authenticated: false,
-      user: null,
-      unmapped: null,
+    const target = `${window.location.origin}${import.meta.env.BASE_URL}index.html#/login`;
+
+    // The Web SDK is injected by the login screen, so it is normally ABSENT
+    // wherever Sign Out actually lives (the Settings page). Without loading it
+    // first we would clear local state while the Catalyst session cookie
+    // survived — and the very next /session call would sign the user straight
+    // back in, which reads as "logging out logs me in again".
+    void loadCatalystSdk().then((ok) => {
+      if (ok && window.catalyst?.auth?.signOut) {
+        window.catalyst.auth.signOut(target);
+        return;
+      }
+      // No SDK reachable (local dev): drop local state and show the login screen.
+      // The server session, if any, is untouched — nothing else can end it here.
+      setState({
+        loading: false,
+        reachable: false,
+        authenticated: false,
+        user: null,
+        unmapped: null,
+      });
+      window.location.href = target;
     });
-    window.location.hash = "#/login";
   }, []);
 
   const value = useMemo<AuthState>(
