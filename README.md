@@ -230,7 +230,8 @@ catalyst-app/
 docs/            architecture, design specs, runbook, demo script
 ```
 
-Design rationale lives in [`architecture.md`](architecture.md), [`design.md`](design.md), and [`docs/superpowers/specs/`](docs/superpowers/specs/).
+Design rationale lives in [`architecture.md`](architecture.md), [`design.md`](design.md), and
+[`docs/design/access-control-and-writes.md`](docs/design/access-control-and-writes.md).
 
 ---
 

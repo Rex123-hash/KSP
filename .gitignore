@@ -61,3 +61,6 @@ catalyst-app/client/favicon.svg
 catalyst-app/appsail/ksp.db
 catalyst-app/appsail/node_modules/
 catalyst-app/appsail/package-lock.json
+
+# Local editor/agent tooling — not part of the submission
+.claude/

@@ -1,7 +1,7 @@
 # Runbook — bringing writes & auth live
 
 Everything in the codebase is done. What remains is Catalyst console setup and one deploy.
-Design rationale lives in `docs/superpowers/specs/2026-07-25-writes-and-auth-design.md`.
+Design rationale lives in `docs/design/access-control-and-writes.md`.
 
 Do the steps in order — step 1 involves email round-trips, so start it first.
 
@@ -29,7 +29,7 @@ Catalyst console → **Authentication**:
 Console → **Data Store** → create five tables in the **Development** environment.
 Do **not** add `ROWID`, `CREATEDTIME`, `CREATORID`, `MODIFIEDTIME` — Catalyst adds those.
 
-Column types and lengths are listed in §5 of the design spec. Summary:
+Column types and lengths are listed in §5 of the design document. Summary:
 
 | Table | Columns |
 |---|---|
